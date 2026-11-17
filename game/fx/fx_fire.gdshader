@@ -46,7 +46,12 @@ void fragment() {
 	vec3 col = mix(v_color.rgb, vec3(0.75, 0.12, 0.03), smoothstep(0.35, 1.0, v_t));
 	col = mix(col, vec3(1.0, 0.95, 0.8), core * (1.0 - smoothstep(0.0, 0.4, v_t)) * 0.8);
 	float depth = textureLod(depth_tex, SCREEN_UV, 0.0).r;
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	// OpenGL / WebGL keep depth in [-1, 1] (the browser demo had no smoke or flames: the soft fade came out 0).
+	vec4 scene = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, depth) * 2.0 - 1.0, 1.0);
+#else
 	vec4 scene = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth, 1.0);
+#endif
 	scene.xyz /= scene.w;
 	float soft = clamp(1.0 - smoothstep(scene.z + soft_distance, scene.z, VERTEX.z), 0.0, 1.0);
 	ALBEDO = col * energy * v_color.a;

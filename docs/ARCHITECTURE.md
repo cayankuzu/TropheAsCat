@@ -556,6 +556,13 @@ Public names of the autoloads are contracts; only the owning module changes thei
   build). Traffic sorts its lanes 20 times a second. Draw-call census of the full city at the landing
   spot before the batching: 4,168, of which the sun's shadow passes 2,817, buildings 1,166, props 768, trees 305,
   people 273.
+- **Effects on OpenGL / WebGL (2026-11-17, evening).** The Compatibility renderer cannot emit GPU particles from
+  script, so the browser demo (and the OpenGL fallback) had no flames, smoke, sparks or pee and acid drops. There
+  `FxLayer.cpu` is set: the layer runs `fx_process.gdshader`'s motion in `_process` for at most `CPU_CAPACITY`
+  (320) particles in fixed slots and uploads one MultiMesh buffer a frame (transform, colour, custom data: what
+  the draw shaders read). The smoke and fire shaders read depth in [-1, 1] on that renderer (`#if
+  CURRENT_RENDERER == RENDERER_COMPATIBILITY`); with the Vulkan formula their soft fade was 0. Check
+  `tests/shot_fx.tscn` with and without `--rendering-driver opengl3`.
 - **Measuring (2026-11-17).** `tests/bench_perf.tscn` (`-- --lite --quality=N --warmup --title --frames=X
   --tag=name`, `--rendering-driver opengl3` for the browser's renderer): vsync off, frame by frame the wall time,
   the script time of each child of main (probe nodes between them), the physics step, the render CPU / GPU time,

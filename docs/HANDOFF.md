@@ -148,6 +148,14 @@ in this order (each tested, then on to the next without asking):
 - Cars: three models drove in reverse (fixed); traffic cars have drivers who run off shouting when Trophe takes
   the car or it is hit; suits no longer carry pistols; sitting people's legs are folded properly.
 - Settings: Graphics is Auto / Low / Medium / High (Auto by default).
+- The browser demo shows flames, smoke, sparks and drops at last (CPU particle path of FxLayer on WebGL).
+- Test run of 2026-11-17 evening: test_player 66/66, test_progress, test_lang, shot_lite, shot_drive (it now
+  asks for 75 m of free road), shot_traffic, shot_carjack, shot_police, shot_react, shot_jobs, shot_meta,
+  shot_giants, shot_inside, shot_rewind, shot_doors, shot_edge, shot_fx pass; shot_robots passed on its second
+  run (vacuumed 0 in the first, flaky as before); test_destruction's "destruction logic <= 2 ms" check is at
+  the limit on this laptop under load (1.98 to 2.12 ms at nominal speed).
+- The real frame rate of the browser demo still has to be seen in a normal browser window: the automated
+  Chrome window runs at about 1 frame a second.
 
 ## Version 0.9.1 (2026-11-17, night): the meta game
 

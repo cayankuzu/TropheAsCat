@@ -46,7 +46,12 @@ void fragment() {
 	float erode = smoothstep(v_t * 0.9 - 0.25, v_t * 0.9 + 0.2, n2 * 0.6 + n * 0.4 + (1.0 - r) * 0.25);
 	float fade = smoothstep(0.0, 0.08, v_t) * (1.0 - smoothstep(0.55, 1.0, v_t));
 	float depth = textureLod(depth_tex, SCREEN_UV, 0.0).r;
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	// OpenGL / WebGL keep depth in [-1, 1] (the browser demo had no smoke or flames: the soft fade came out 0).
+	vec4 scene = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, depth) * 2.0 - 1.0, 1.0);
+#else
 	vec4 scene = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth, 1.0);
+#endif
 	scene.xyz /= scene.w;
 	float soft = clamp(1.0 - smoothstep(scene.z + soft_distance, scene.z, VERTEX.z), 0.0, 1.0);
 	// View-space normal of a sphere impostor, turned with the roll of the billboard.
