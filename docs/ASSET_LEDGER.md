@@ -5,8 +5,10 @@ is built from this file. Downloaded on 2026-11-13 through the director's own Chr
 
 Rules that follow from these licences:
 
-- **Keep the repository private.** Sonniss, Sketchfab and Mixamo terms forbid redistributing raw files.
-  Only the finished game may contain them.
+- **The repository is public (2026-11-17, the director's call), so raw downloads never go into it.**
+  Sonniss and Mixamo terms forbid redistributing raw files: `_downloads/` is git-ignored and only the
+  finished game may contain them. Everything under `assets/` is CC0, CC BY 4.0, MIT or OFL, which allow
+  redistribution with the credits in `CREDITS.md`.
 - **CC BY assets need a credit line** in the in-game credits and the store page (see "Credit" column).
 - **AI disclosure:** the hero cat model is labelled "Generated with AI" on Sketchfab. Steam requires the
   AI-generated content disclosure on the store page for pre-generated content like this.
