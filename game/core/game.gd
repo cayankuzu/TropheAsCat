@@ -15,16 +15,23 @@ var lite := OS.has_feature("web") or OS.has_feature("demo")
 
 var _time_scale_requests: Dictionary = {}   # key -> scale
 var _perf_left := 5.0
+## "-- --no-hud" on the command line hides every HUD layer (store-page screenshots from the test scenes).
+var _no_hud := OS.get_cmdline_user_args().has("--no-hud")
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_input()
-	set_process(lite)
+	set_process(lite or _no_hud)
 
 
 ## The lite build prints its frame rate and draw calls every 5 s (read in the browser's console).
 func _process(_delta: float) -> void:
+	if _no_hud:
+		for c in get_tree().root.find_children("*", "CanvasLayer", true, false):
+			(c as CanvasLayer).visible = false
+		if not lite:
+			return
 	# Wall-clock time: when frames are slow, Godot clamps the game's delta to the physics steps it runs.
 	var now := Time.get_ticks_msec() * 0.001
 	if now < _perf_left:

@@ -135,6 +135,18 @@ in this order (each tested, then on to the next without asking):
    denser (more streets of shops, a stadium or a train?); a browser demo build (Compatibility renderer, no
    voxel terrain) for itch.io and a Windows build of the full game.
 
+## Published (2026-11-17, evening)
+
+- itch.io: https://memode.itch.io/cat-as-trophe (MeMoDe's account, like Merbut: dark theme, banner, HTML
+  kind with the browser demo embedded at 1280x720, the Windows zip as a download, free, "In development",
+  genre Action, AI disclosure for graphics, text and code, comments on). Channels `html5` and `windows`,
+  version 0.9.0, pushed with butler.
+- GitHub: https://github.com/cayankuzu/CatAsTrophe (public, `main`; `_downloads/`, `_spikes/`, `.godot/`,
+  `builds/` and `tests/out/` are not in it; the ground's texture set is in Git LFS).
+- fikkis (the director's project archive, `Desktop\fikkis`, Next.js on Vercel from `main`): the card
+  "cat-as-trophe" in `src/app/projects.ts`, its English in `src/app/_lib/projects-en.ts`, its place in the
+  featured order in `src/app/_lib/project-meta.ts`, previews in `public/project-previews/catastrophe-*.png`.
+
 ## What was done last (2026-11-17, afternoon): languages, builds, a city that films you
 
 - English and Turkish (`Lang`, `LangTr`, Settings > Language; Turkish by default on a Turkish Windows).

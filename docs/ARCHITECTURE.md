@@ -503,6 +503,15 @@ Public names of the autoloads are contracts; only the owning module changes thei
   toggles that for profiling (`Game._debug_toggle`). Frame rates measured in the automated Chrome tab are
   meaningless: Chrome throttles that window to about 1 frame a second even for a blank page. Play-test the
   demo in a normal browser window: `tools/serve_web_demo.bat` serves `builds/web` on port 8060 and opens it.
+  The Windows game must stay under itch.io's 1 GB a file (998 MB on 2026-11-17): the material maps in
+  `assets/textures` import VRAM-compressed at most 1536 px, the sky HDRIs and Trophe's maps at most 2048 px
+  (`tools/limit_texture_imports.py` sets the .import files), and the export plugin shrinks the
+  StrataTextureSet layers to 1536 for Windows (S3TC with all four channels: BPTC needs the GPU compressor,
+  which a headless export does not have). Bump `_get_customization_configuration_hash()` whenever the plugin's
+  logic changes, or the export reuses the old cached results. Store images: `tools/make_store_images.py` from
+  screenshots taken with `-- --no-hud` (hides every HUD layer, `Game._no_hud`) and `tests/shot_marketing.tscn`.
+  Publishing: `C:\Tools\butler\butler.exe push builds/web memode/cat-as-trophe:html5 --userversion X` and
+  `... push builds/windows memode/cat-as-trophe:windows --userversion X` (butler is logged in on this machine).
   `python -I tools/pck_list.py builds/web/index.pck` lists the
   biggest files of a package; `tools/extract_strings.py` lists the user-facing strings (for LangTr).
 - **People's reactions (2026-11-17).** `People` states FILM, CALL, CHASE (appended to the enum). A witness of

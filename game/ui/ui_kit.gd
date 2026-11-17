@@ -29,6 +29,10 @@ static func font(path: String, weight: int = 700) -> Font:
 			var v := FontVariation.new()
 			v.base_font = base
 			v.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): weight}
+			if path == FREDOKA:
+				# Fredoka has no Turkish ş / ğ / İ, and a browser has no system font to fall back on.
+				var fallback: Array[Font] = [font(NUNITO, weight)]
+				v.fallbacks = fallback
 			out = v
 	_fonts[key] = out
 	return out
