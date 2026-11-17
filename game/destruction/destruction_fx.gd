@@ -16,6 +16,10 @@ var _recent_pos := PackedVector3Array()
 var _recent_t := PackedFloat64Array()
 var _time := 0.0
 var bursts := 0
+## Share of each burst that is emitted at the current graphics level (Perf "dust"): thick clouds of big
+## translucent quads are the most expensive thing on the screen of a weak GPU.
+var _density := 1.0
+var _dust_look: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -36,6 +40,7 @@ func _ready() -> void:
 	dm.backlight = Color(0.35, 0.33, 0.3)
 	dm.cull_mode = BaseMaterial3D.CULL_DISABLED
 	dust_draw.material = dm
+	_dust_look = dm
 	for i in dust_pool:
 		var p := GPUParticles3D.new()
 		var pm := _dust_process()
@@ -74,10 +79,18 @@ func _ready() -> void:
 		add_child(p)
 		_chips.append(p)
 		_chip_mat.append(pm)
+	_apply_level()
+	Perf.level_changed.connect(func(_l: int) -> void: _apply_level())
 
 
 func _process(delta: float) -> void:
 	_time += delta
+
+
+func _apply_level() -> void:
+	_density = Perf.budget(&"dust")
+	# Proximity fade reads the depth buffer (a depth copy on OpenGL / WebGL): only above the Low level.
+	_dust_look.proximity_fade_enabled = Perf.level > 0
 
 
 func _dust_process() -> ParticleProcessMaterial:
@@ -179,6 +192,12 @@ func _merge(pos: Vector3, radius: float, window: float) -> bool:
 
 ## Dust where an element broke. extents: element size; strength 0..1.
 func dust(pos: Vector3, extents: Vector3, material: StringName, strength: float) -> void:
+	var t_probe := PerfProbe.begin()
+	dust_timed(pos, extents, material, strength)
+	PerfProbe.add(&"fx_dust", t_probe)
+
+
+func dust_timed(pos: Vector3, extents: Vector3, material: StringName, strength: float) -> void:
 	if MaterialDB.is_glass(material):
 		return
 	if _merge(pos, 2.2, 0.35):
@@ -194,7 +213,7 @@ func dust(pos: Vector3, extents: Vector3, material: StringName, strength: float)
 	pm.spread = 80.0
 	pm.direction = Vector3.UP
 	pm.gravity = Vector3(0.0, 0.12, 0.0)
-	p.amount_ratio = clampf(0.45 + strength * 0.55, 0.3, 1.0)
+	p.amount_ratio = clampf(0.45 + strength * 0.55, 0.3, 1.0) * _density
 	p.lifetime = 5.0 + strength * 4.0
 	p.global_position = pos
 	p.restart()
@@ -203,6 +222,12 @@ func dust(pos: Vector3, extents: Vector3, material: StringName, strength: float)
 
 ## Big low dust cloud where a heavy body hit the ground.
 func impact_dust(pos: Vector3, strength: float, material: StringName = &"concrete") -> void:
+	var t_probe := PerfProbe.begin()
+	impact_dust_timed(pos, strength, material)
+	PerfProbe.add(&"fx_impact_dust", t_probe)
+
+
+func impact_dust_timed(pos: Vector3, strength: float, material: StringName = &"concrete") -> void:
 	if _merge(pos, 4.0, 0.5):
 		return
 	var p := _dust[_dust_next]
@@ -217,7 +242,7 @@ func impact_dust(pos: Vector3, strength: float, material: StringName = &"concret
 	pm.spread = 88.0
 	pm.direction = Vector3.UP
 	pm.gravity = Vector3(0.0, 0.06, 0.0)
-	p.amount_ratio = clampf(0.5 + strength * 0.5, 0.4, 1.0)
+	p.amount_ratio = clampf(0.5 + strength * 0.5, 0.4, 1.0) * _density
 	p.lifetime = 7.0 + strength * 5.0
 	p.global_position = pos + Vector3(0.0, 0.4, 0.0)
 	p.restart()
@@ -225,6 +250,12 @@ func impact_dust(pos: Vector3, strength: float, material: StringName = &"concret
 
 
 func chips(pos: Vector3, extents: Vector3, material: StringName, strength: float, velocity: Vector3 = Vector3.ZERO) -> void:
+	var t_probe := PerfProbe.begin()
+	chips_timed(pos, extents, material, strength, velocity)
+	PerfProbe.add(&"fx_chips", t_probe)
+
+
+func chips_timed(pos: Vector3, extents: Vector3, material: StringName, strength: float, velocity: Vector3 = Vector3.ZERO) -> void:
 	var p := _chips[_chip_next]
 	var pm := _chip_mat[_chip_next]
 	_chip_next = (_chip_next + 1) % _chips.size()
@@ -240,6 +271,6 @@ func chips(pos: Vector3, extents: Vector3, material: StringName, strength: float
 	else:
 		pm.direction = Vector3.UP
 		pm.spread = 75.0
-	p.amount_ratio = clampf(0.3 + strength * 0.7, 0.2, 1.0)
+	p.amount_ratio = clampf(0.3 + strength * 0.7, 0.2, 1.0) * maxf(_density, 0.5)
 	p.global_position = pos
 	p.restart()

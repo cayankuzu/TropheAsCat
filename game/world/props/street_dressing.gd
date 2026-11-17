@@ -148,6 +148,20 @@ var vehicles: VehicleLibrary = null
 var _rng := RandomNumberGenerator.new()
 var _scenes := {}
 var _scan := 0
+## The meshes of every prop with their own range end (0: none) and kind (RANGE_*): how far they are drawn
+## follows the graphics level (Perf), set when a prop is made and again when the level changes. Untyped:
+## a broken prop's meshes are freed with it.
+var _ranged: Array = []
+var _ranged_base := PackedFloat32Array()
+var _ranged_kind := PackedByteArray()
+var _ranged_shadow := PackedByteArray()   # 1: the mesh casts a shadow of its own accord
+const RANGE_SMALL := 0
+const RANGE_BIG := 1
+const RANGE_INSIDE := 2
+
+
+func _ready() -> void:
+	Perf.level_changed.connect(_on_level)
 
 
 func prop_count() -> int:
@@ -206,11 +220,10 @@ func add_prop(id: StringName, at: Vector3, yaw: float = 0.0, on_ground: bool = t
 	if inside:
 		prop.set_meta(&"inside", true)   # counted by the OFFICE SPACE job and the HOUSE CALL achievement
 		for node in prop.find_children("*", "MeshInstance3D", true, false):
-			var mi := node as MeshInstance3D
-			mi.visibility_range_end = minf(mi.visibility_range_end, 45.0) if mi.visibility_range_end > 0.0 else 45.0
-			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	elif Game.lite:
-		_limit_range(prop, LITE_RANGE)
+			(node as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_track_range(prop, RANGE_INSIDE)
+	else:
+		_track_range(prop, RANGE_SMALL)
 	return prop
 
 
@@ -251,20 +264,54 @@ func add_node_prop(id: StringName, model: Node3D, def: Dictionary, at: Vector3, 
 	prop.global_transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(at.x, _ground(at.x, at.z) + lift + 0.01, at.z))
 	prop.reset_physics_interpolation()
 	props.append(prop)
-	if Game.lite:
-		_limit_range(prop, LITE_RANGE_BIG)
+	_track_range(prop, RANGE_BIG)
 	return prop
 
 
-## The lite build draws loose things only near the camera (the browser demo runs on integrated GPUs).
-const LITE_RANGE := 70.0
-const LITE_RANGE_BIG := 140.0
+## How far a prop of this kind is drawn at the current graphics level (the browser demo draws less).
+static func kind_range(kind: int) -> float:
+	match kind:
+		RANGE_BIG:
+			return Perf.budget(&"big_range")
+		RANGE_INSIDE:
+			return Perf.budget(&"inside_range")
+	return Perf.budget(&"prop_range")
 
 
-static func _limit_range(prop: Node, metres: float) -> void:
+func _track_range(prop: Node, kind: int) -> void:
+	var r := kind_range(kind)
+	var shadows := _small_shadows()
 	for node in prop.find_children("*", "MeshInstance3D", true, false):
 		var mi := node as MeshInstance3D
-		mi.visibility_range_end = minf(mi.visibility_range_end, metres) if mi.visibility_range_end > 0.0 else metres
+		_ranged.append(mi)
+		_ranged_base.append(mi.visibility_range_end)
+		_ranged_kind.append(kind)
+		var casts := mi.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_ranged_shadow.append(1 if casts else 0)
+		mi.visibility_range_end = minf(mi.visibility_range_end, r) if mi.visibility_range_end > 0.0 else r
+		if casts and kind == RANGE_SMALL and not shadows:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+## Small loose things cast shadows above the Low level only: in the city they were most of the draw calls
+## of the sun's shadow passes (2026-11-17 bench: two thirds of all draw calls were shadow passes).
+static func _small_shadows() -> bool:
+	return Perf.level > 0
+
+
+func _on_level(_level: int) -> void:
+	var r: Array[float] = [kind_range(RANGE_SMALL), kind_range(RANGE_BIG), kind_range(RANGE_INSIDE)]
+	var shadows := _small_shadows()
+	for i in _ranged.size():
+		var obj: Variant = _ranged[i]
+		if not is_instance_valid(obj):
+			continue
+		var mi := obj as MeshInstance3D
+		var base := _ranged_base[i]
+		var want := r[_ranged_kind[i]]
+		mi.visibility_range_end = minf(base, want) if base > 0.0 else want
+		if _ranged_kind[i] == RANGE_SMALL and _ranged_shadow[i] == 1:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 ## A car for a painted bay, a drive or a pump: an everyday car, now and then a taxi or a police car;
@@ -468,6 +515,7 @@ func _put(prop: BreakableProp, at: Vector3, yaw: float) -> void:
 	prop.global_transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(at.x, _ground(at.x, at.z) + 0.02, at.z))
 	prop.reset_physics_interpolation()
 	props.append(prop)
+	_track_range(prop, RANGE_BIG)
 
 
 ## axis 0 = a road along x (at z = line), axis 1 = a road along z (at x = line); side is -1 or +1.

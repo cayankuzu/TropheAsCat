@@ -39,7 +39,7 @@ func _process(_delta: float) -> void:
 		_drive = _main.get("driving") as CatDriving
 		# The parked car nearest to the crossing where she lands.
 		var dressing := _main.get("dressing") as StreetDressing
-		# A parked car with 40 m of free road ahead of it.
+		# A parked car with 75 m of free road ahead of it (four seconds at full throttle cover about 60 m).
 		var best := 1.0e9
 		var space := get_viewport().world_3d.direct_space_state
 		for p in dressing.props:
@@ -49,7 +49,7 @@ func _process(_delta: float) -> void:
 					continue
 				var fwd := -p.global_basis.z.normalized()
 				var from := p.global_position + Vector3.UP * 0.8 + fwd * (p.size.z * 0.5 + 0.3)
-				var q := PhysicsRayQueryParameters3D.create(from, from + fwd * 40.0, Layers.STRUCTURE | Layers.PROPS | Layers.PROTECTED)
+				var q := PhysicsRayQueryParameters3D.create(from, from + fwd * 75.0, Layers.STRUCTURE | Layers.PROPS | Layers.PROTECTED)
 				if space.intersect_ray(q).is_empty():
 					best = d
 					_car = p

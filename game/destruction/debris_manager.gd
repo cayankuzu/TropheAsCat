@@ -67,6 +67,15 @@ const IMPACT_BUDGET_USEC := 2500   ## impacts beyond this keep their pre-impact 
 @export var piece_impact_min_j := 1000.0
 @export var impact_energy_factor := 1.0
 @export var budget_ms := 0.5
+## Spawning a piece costs a fraction of a millisecond (a pooled body back in the physics space with its mesh
+## and shape): a big blast made hundreds at once, a 100 ms hitch (2026-11-17). Small pieces (T2) beyond this
+## much spawning in one frame wait in _deferred and come in over the next frames, at most DEFERRED_MAX of them.
+@export var spawn_budget_usec := 3500
+const DEFERRED_MAX := 900
+var _deferred: Array = []
+var _deferred_head := 0   # the first piece still waiting (the array is compacted when it has all come in)
+var _spawn_frame := -1
+var _spawn_usec := 0
 @export var pool_prewarm := 384
 @export var pool_spare := 192            ## bodies kept ready when the scene is quiet
 
@@ -209,6 +218,8 @@ func _exit_tree() -> void:
 
 ## Frees all rubble server bodies and returns every active body to the pool (teardown / tests).
 func clear() -> void:
+	_deferred.clear()
+	_deferred_head = 0
 	for s in _active.duplicate():
 		_deactivate(s)
 	for idx in _rb_alive.size():
@@ -240,6 +251,9 @@ func clear() -> void:
 
 
 func _ready() -> void:
+	# Debris bodies simulated at once: what the CPU of the machine can carry (Perf).
+	awake_budget = int(Perf.budget(&"debris_awake"))
+	Perf.level_changed.connect(func(_l: int) -> void: awake_budget = int(Perf.budget(&"debris_awake")))
 	_phys_mat.friction = 0.65
 	_phys_mat.bounce = 0.05
 	_support_ray.collision_mask = STATIC_SUPPORT
@@ -251,6 +265,13 @@ func _ready() -> void:
 
 
 func _new_pooled_body() -> RigidBody3D:
+	var t_probe := PerfProbe.begin()
+	var r_probe := _new_pooled_body_timed()
+	PerfProbe.add(&"debris_new_body", t_probe)
+	return r_probe
+
+
+func _new_pooled_body_timed() -> RigidBody3D:
 	var b := RigidBody3D.new()
 	b.physics_material_override = _phys_mat
 	b.center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
@@ -365,13 +386,73 @@ func awake_count() -> int:
 
 func spawn_piece(mesh: Mesh, shape: Shape3D, xf: Transform3D, com: Vector3, mass: float, lin: Vector3, ang: Vector3,
 		tier: int, material: StringName, cause: int) -> int:
+	var t_probe := PerfProbe.begin()
+	var r_probe := spawn_piece_timed(mesh, shape, xf, com, mass, lin, ang, tier, material, cause)
+	PerfProbe.add(&"debris_piece", t_probe)
+	if t_probe != 0:
+		var st := get_stack()
+		if st.size() > 1:
+			PerfProbe.add(StringName("piece_from_%s_t%d" % [st[1]["function"], tier]), t_probe)
+	return r_probe
+
+
+func spawn_piece_timed(mesh: Mesh, shape: Shape3D, xf: Transform3D, com: Vector3, mass: float, lin: Vector3, ang: Vector3,
+		tier: int, material: StringName, cause: int) -> int:
+	var frame := Engine.get_process_frames()
+	if frame != _spawn_frame:
+		_spawn_frame = frame
+		_spawn_usec = 0
+	if tier == T2 and (_spawn_usec > spawn_budget_usec or _deferred_head < _deferred.size()):
+		# Small debris over this frame's budget comes in over the next frames (big pieces never wait).
+		if _deferred.size() - _deferred_head >= DEFERRED_MAX:
+			return -1   # a storm of chips: the smallest share of it is simply not made
+		_deferred.append([mesh, shape, xf, com, mass, lin, ang, tier, material, cause, Time.get_ticks_usec()])
+		return -1
+	var t0 := Time.get_ticks_usec()
 	var s := _alloc_slot()
 	_kind[s] = Kind.PIECE
 	_setup_pooled(s, mesh, shape, xf, com, mass, lin, ang, tier, material, cause)
+	_spawn_usec += Time.get_ticks_usec() - t0
 	return s
 
 
+## Small pieces that waited for room: each moves along its flight for the time it waited.
+func _drain_deferred() -> void:
+	var frame := Engine.get_process_frames()
+	if frame != _spawn_frame:
+		_spawn_frame = frame
+		_spawn_usec = 0
+	var now := Time.get_ticks_usec()
+	var i := _deferred_head
+	while i < _deferred.size() and _spawn_usec < spawn_budget_usec:
+		var d: Array = _deferred[i]
+		_deferred[i] = null
+		i += 1
+		var wait := minf((now - int(d[10])) / 1000000.0, 0.5)
+		var lin: Vector3 = d[5]
+		var xf: Transform3D = d[2]
+		xf.origin += lin * wait + Vector3(0.0, -4.9, 0.0) * wait * wait
+		lin += Vector3(0.0, -9.8, 0.0) * wait
+		var t0 := Time.get_ticks_usec()
+		var s := _alloc_slot()
+		_kind[s] = Kind.PIECE
+		_setup_pooled(s, d[0], d[1], xf, d[3], d[4], lin, d[6], d[7], d[8], d[9])
+		_spawn_usec += Time.get_ticks_usec() - t0
+	_deferred_head = i
+	if _deferred_head >= _deferred.size():
+		_deferred.clear()
+		_deferred_head = 0
+
+
 func spawn_element(building: int, element: int, mesh: Mesh, shape: Shape3D, xf: Transform3D, com: Vector3, mass: float,
+		lin: Vector3, ang: Vector3, material: StringName, cause: int) -> int:
+	var t_probe := PerfProbe.begin()
+	var r_probe := spawn_element_timed(building, element, mesh, shape, xf, com, mass, lin, ang, material, cause)
+	PerfProbe.add(&"debris_element", t_probe)
+	return r_probe
+
+
+func spawn_element_timed(building: int, element: int, mesh: Mesh, shape: Shape3D, xf: Transform3D, com: Vector3, mass: float,
 		lin: Vector3, ang: Vector3, material: StringName, cause: int) -> int:
 	var s := _alloc_slot()
 	_kind[s] = Kind.ELEMENT
@@ -426,6 +507,13 @@ func _setup_pooled(s: int, mesh: Mesh, shape: Shape3D, xf: Transform3D, com: Vec
 
 
 func register_cluster(c: DebrisCluster, lin: Vector3, ang: Vector3, cause: int) -> int:
+	var t_probe := PerfProbe.begin()
+	var r_probe := register_cluster_timed(c, lin, ang, cause)
+	PerfProbe.add(&"debris_cluster", t_probe)
+	return r_probe
+
+
+func register_cluster_timed(c: DebrisCluster, lin: Vector3, ang: Vector3, cause: int) -> int:
 	var s := _alloc_slot()
 	var b := c.body
 	_body[s] = b
@@ -737,6 +825,12 @@ static func scaled_impulse(impulse: float, mass: float, density: float) -> float
 
 ## DamageRouter entry for registered debris bodies and rubble.
 func receive_damage(hit: DamageHit, user_id: int) -> void:
+	var t_probe := PerfProbe.begin()
+	receive_damage_timed(hit, user_id)
+	PerfProbe.add(&"debris_damage", t_probe)
+
+
+func receive_damage_timed(hit: DamageHit, user_id: int) -> void:
 	if user_id & RUBBLE_FLAG:
 		var idx := user_id & ~RUBBLE_FLAG
 		if idx >= _rb_alive.size() or _rb_alive[idx] == 0 or hit.kind == DamageHit.Kind.CRUSH:
@@ -776,6 +870,8 @@ func receive_damage(hit: DamageHit, user_id: int) -> void:
 func _process(delta: float) -> void:
 	if rewinding:
 		return
+	if _deferred_head < _deferred.size():
+		_drain_deferred()
 	var t0 := Time.get_ticks_usec()
 	_time += delta
 	var deadline := t0 + int(budget_ms * 1000.0)
@@ -1380,6 +1476,14 @@ func _cluster_mat(c: DebrisCluster, i: int) -> StringName:
 ## away the piece is checked (see support_removed).
 func _add_rubble(mesh: Mesh, shape: Shape3D, xf: Transform3D, mass: float, com: Vector3, material: StringName, ob: int, oe: int,
 		small: bool = false, on: RID = RID(), born: float = -1.0, born_xf: Transform3D = Transform3D.IDENTITY) -> RID:
+	var t_probe := PerfProbe.begin()
+	var r_probe := _add_rubble_timed(mesh, shape, xf, mass, com, material, ob, oe, small, on, born, born_xf)
+	PerfProbe.add(&"debris_rubble", t_probe)
+	return r_probe
+
+
+func _add_rubble_timed(mesh: Mesh, shape: Shape3D, xf: Transform3D, mass: float, com: Vector3, material: StringName, ob: int, oe: int,
+		small: bool = false, on: RID = RID(), born: float = -1.0, born_xf: Transform3D = Transform3D.IDENTITY) -> RID:
 	var idx: int
 	if not _rb_free.is_empty():
 		idx = _rb_free[_rb_free.size() - 1]
@@ -1512,6 +1616,8 @@ func _wake_index(idx: int) -> RigidBody3D:
 # --------------------------------------------------------------------------------------------------
 
 func rewind_begin() -> void:
+	_deferred.clear()   # pieces that never came in stay unmade
+	_deferred_head = 0
 	rewinding = true
 	_rw_now = _time
 	_rw_from.clear()

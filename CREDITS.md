@@ -1,6 +1,6 @@
 # Credits
 
-**Cat As Trophe** by MeMoDe. Made with Godot Engine.
+**Trophe As Cat** by MeMoDe. Made with Godot Engine.
 
 ## Attribution (CC BY 4.0)
 

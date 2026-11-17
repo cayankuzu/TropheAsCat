@@ -45,6 +45,10 @@ const LANE_HALF := 54.4
 const ACTIVE_RADIUS := 95.0
 const SLEEP_RADIUS := 108.0
 const MAX_ACTIVE := 44
+## Making a person's figure (the model, its skeleton, its animation player, the glaze) costs several
+## milliseconds: at most one is made per tick, and figures for people up to WARM_RADIUS away are made ahead of
+## time, hidden, in ticks that made none (2026-11-17: ten at once made a 90 ms hitch when she came round a corner).
+const WARM_RADIUS := 135.0
 const WALK_SPEED := 1.3          ## the pace the Walk clip was made for
 const RUN_SPEED := 4.6           ## the pace the Run clip was made for
 const SHATTER_J := 600.0         ## a hit with at least this much energy breaks a person (a paw swat has 3000)
@@ -71,6 +75,9 @@ const CALL_LINES: PackedStringArray = ["Hello, police? A bald cat!", "Yes, a CAT
 const CALLED_LINE := "They are on their way!"
 const CHASE_LINES: PackedStringArray = ["Come here, you!", "Not on my street!", "I will show you vases!", "Get back here, furball!"]
 const KICK_LINES: PackedStringArray = ["Take that!", "And stay out!", "Shoo! SHOO!"]
+## What a driver shouts when Trophe takes the car (Traffic.take_car) or when something hits it.
+const CARJACKED_LINES: PackedStringArray = ["My car!", "Hey! That is MY car!", "Is that cat... driving?!", "Somebody stop that cat!", "I just washed it!"]
+const CRASH_LINES: PackedStringArray = ["Are you kidding me?!", "My insurance...", "I am getting out of here!", "Not again!"]
 const FILM_CHANCE := 0.35
 const CALL_CHANCE := 0.15
 const CHASE_CHANCE := 0.45
@@ -129,6 +136,7 @@ var kicks := 0
 var _overrides: Array = []        # per figure, per variant: {source material: glazed material}
 var _skin: Array = []             # per figure, per variant: the glazed skin (for the head that rolls away)
 var _sit_drop := PackedFloat32Array()   # per figure: how far the hips come down when it sits
+var _hip_h := PackedFloat32Array()      # per figure: height of the hip joints over the feet (rest pose)
 var _glazes: Array[StandardMaterial3D] = []
 var _capsule := CapsuleShape3D.new()
 var _shards: Array[Mesh] = []
@@ -140,6 +148,8 @@ var _tags: Array[Label3D] = []
 var _tag_left := PackedFloat32Array()
 var _next_tag := 0
 var _active_count := 0
+## How many may be active at once (Perf lowers it on weaker machines).
+var max_active := MAX_ACTIVE
 var _scan := 0
 var _rng := RandomNumberGenerator.new()
 var _ray := PhysicsRayQueryParameters3D.new()
@@ -154,6 +164,8 @@ static func model_paths() -> PackedStringArray:
 
 
 func _ready() -> void:
+	max_active = int(Perf.budget(&"people"))
+	Perf.level_changed.connect(func(_l: int) -> void: max_active = int(Perf.budget(&"people")))
 	_rng.seed = 4711
 	for c: Array in CAST:
 		_add_figure(load(CAST_ROOT + String(c[0]) + ".gltf") as PackedScene, bool(c[3]))
@@ -225,6 +237,7 @@ func _add_figure(scene: PackedScene, rude: bool) -> void:
 	_overrides.append(per_variant)
 	_skin.append(skins)
 	_sit_drop.append(0.0)
+	_hip_h.append(0.95)
 	if scene == null:
 		return
 	var tmp := scene.instantiate()
@@ -240,6 +253,10 @@ func _add_figure(scene: PackedScene, rude: bool) -> void:
 			var sit := _make_sit(lib.get_animation(&"Idle"), skeletons[0] as Skeleton3D, _sit_drop.size() - 1)
 			if sit != null:
 				lib.add_animation(&"Sit", sit)
+			# At the wheel: the thighs a little up, the shins reaching forward to the pedals.
+			var drive := _make_sit(lib.get_animation(&"Idle"), skeletons[0] as Skeleton3D, _sit_drop.size() - 1, -PI * 0.5, PI * 0.22)
+			if drive != null:
+				lib.add_animation(&"Drive", drive)
 	for node in tmp.find_children("*", "MeshInstance3D", true, false):
 		var mesh := (node as MeshInstance3D).mesh
 		if mesh == null:
@@ -275,7 +292,7 @@ func _add_figure(scene: PackedScene, rude: bool) -> void:
 
 ## A sitting clip made from the idle one: the thighs swing forward and the shins hang down again, so the
 ## figure sits on whatever is under its hips once it is lowered by the length of its thigh.
-func _make_sit(idle: Animation, sk: Skeleton3D, figure: int) -> Animation:
+func _make_sit(idle: Animation, sk: Skeleton3D, figure: int, thigh_turn: float = -PI * 0.5, shin_turn: float = PI * 0.5) -> Animation:
 	var sit := idle.duplicate(true) as Animation
 	var lateral := Vector3.RIGHT
 	var found := 0
@@ -287,7 +304,13 @@ func _make_sit(idle: Animation, sk: Skeleton3D, figure: int) -> Animation:
 		var thigh_rest := sk.get_bone_global_rest(thigh)
 		var shin_rest := sk.get_bone_global_rest(shin)
 		_sit_drop[figure] = maxf(_sit_drop[figure], thigh_rest.origin.distance_to(shin_rest.origin))
-		for pair: Array in [[thigh, -PI * 0.5, thigh_rest], [shin, PI * 0.5, shin_rest]]:
+		var chain := Transform3D.IDENTITY   # the skeleton in the figure's root (not in the tree yet)
+		var up: Node = sk
+		while up is Node3D:
+			chain = (up as Node3D).transform * chain
+			up = up.get_parent()
+		_hip_h[figure] = (chain * thigh_rest).origin.y
+		for pair: Array in [[thigh, thigh_turn, thigh_rest], [shin, shin_turn, shin_rest]]:
 			var axis := ((pair[2] as Transform3D).basis.inverse() * lateral).normalized()
 			var turn := Quaternion(axis, float(pair[1]))
 			var bone_name := sk.get_bone_name(int(pair[0]))
@@ -300,8 +323,46 @@ func _make_sit(idle: Animation, sk: Skeleton3D, figure: int) -> Animation:
 					var q: Quaternion = sit.track_get_key_value(t, k)
 					sit.track_set_key_value(t, k, q * turn)
 				found += 1
+		# The feet of these rigs hang from the root (IK targets baked into the clips), not from the shins: they
+		# stay on the ground while the knees come up, and the shins stretch down to them (under a bench the
+		# ground hid it; under a car it showed). Each foot is moved to the end of its folded leg.
+		var foot := sk.find_bone("Foot" + side)
+		if foot < 0:
+			continue
+		var shin_len := shin_rest.origin.distance_to(sk.get_bone_global_rest(foot).origin)
+		var knee_pose := _pose_at_start(sit, sk, shin)   # the folded leg as the clip now poses it
+		var target := knee_pose.origin + knee_pose.basis.y.normalized() * shin_len
+		var parent := sk.get_bone_parent(foot)
+		var local := _pose_at_start(sit, sk, parent).affine_inverse() * target if parent >= 0 else target
+		var foot_name := sk.get_bone_name(foot)
+		for t in sit.get_track_count():
+			if sit.track_get_type(t) == Animation.TYPE_POSITION_3D and sit.track_get_path(t).get_concatenated_subnames() == foot_name:
+				for k in sit.track_get_key_count(t):
+					sit.track_set_key_value(t, k, local)
 	sit.loop_mode = Animation.LOOP_LINEAR
 	return sit if found == 4 else null
+
+
+## A bone's transform in the skeleton at the first key of `anim` (its tracks over the rest pose).
+static func _pose_at_start(anim: Animation, sk: Skeleton3D, bone: int) -> Transform3D:
+	var parent := sk.get_bone_parent(bone)
+	var up := _pose_at_start(anim, sk, parent) if parent >= 0 else Transform3D.IDENTITY
+	var rest := sk.get_bone_rest(bone)
+	var pos := rest.origin
+	var rot := rest.basis.get_rotation_quaternion()
+	var scl := rest.basis.get_scale()
+	var bone_name := sk.get_bone_name(bone)
+	for t in anim.get_track_count():
+		if anim.track_get_key_count(t) == 0 or anim.track_get_path(t).get_concatenated_subnames() != bone_name:
+			continue
+		match anim.track_get_type(t):
+			Animation.TYPE_POSITION_3D:
+				pos = anim.track_get_key_value(t, 0)
+			Animation.TYPE_ROTATION_3D:
+				rot = anim.track_get_key_value(t, 0)
+			Animation.TYPE_SCALE_3D:
+				scl = anim.track_get_key_value(t, 0)
+	return up * Transform3D(Basis(rot).scaled(scl), pos)
 
 
 func count() -> int:
@@ -408,16 +469,25 @@ func _physics_process(delta: float) -> void:
 		return
 	var cat_at := player.global_position
 	# A few people per tick are checked for coming into or going out of range.
+	var made := 0
 	for k in mini(10, people.size()):
 		_scan = (_scan + 1) % people.size()
 		var p := people[_scan]
 		if p.state == State.GONE:
 			continue
 		var d := p.pos.distance_to(cat_at)
-		if p.active and d > SLEEP_RADIUS:
+		if p.active and (d > SLEEP_RADIUS or _active_count > max_active):
 			_deactivate(p)
-		elif not p.active and d < ACTIVE_RADIUS and _active_count < MAX_ACTIVE:
+		elif not p.active and d < ACTIVE_RADIUS and _active_count < max_active:
+			if p.visual == null:
+				if made > 0:
+					continue
+				made += 1
 			_activate(p)
+		elif not p.active and p.visual == null and made == 0 and d < WARM_RADIUS:
+			made += 1
+			_make_figure(p)
+			p.visual.visible = false
 	for p in people:
 		if p.state == State.GONE:
 			continue
@@ -654,6 +724,12 @@ func retire(id: int) -> void:
 
 ## Everyone active within `radius` of a point runs from it.
 func scare(at: Vector3, radius: float) -> void:
+	var t_probe := PerfProbe.begin()
+	scare_timed(at, radius)
+	PerfProbe.add(&"people_scare", t_probe)
+
+
+func scare_timed(at: Vector3, radius: float) -> void:
 	for p in people:
 		if p.active and p.state != State.GONE and p.state != State.FALL and p.pos.distance_squared_to(at) < radius * radius:
 			if not _react(p, at):
@@ -949,18 +1025,102 @@ func _ground_under(at: Vector3, reach: float) -> float:
 	return (hit["position"] as Vector3).y
 
 
-func _activate(p: Person) -> void:
-	p.active = true
-	_active_count += 1
-	if p.visual == null:
-		p.visual = _cast[p.look].instantiate() as Node3D
-		p.visual.name = "Person%d" % p.id
-		p.visual.scale = Vector3.ONE * p.size
-		add_child(p.visual)
-		var players := p.visual.find_children("*", "AnimationPlayer", true, false)
+## Index of a figure of CAST by its model name, -1 if there is none.
+static func cast_index(model: String) -> int:
+	for i in CAST.size():
+		if String(CAST[i][0]) == model:
+			return i
+	return -1
+
+
+## A seated figure for the driver's seat of a traffic car (2026-11-17): a person of the cast in its glaze,
+## in the sitting pose, posed once and paused (no animation cost), drawn only near and without a shadow (it
+## sits behind glass), added under `parent`. look -1 picks one by weight. Returns [figure, look, tint, hip
+## height]; the caller owns the figure until it hands it back with add_runner().
+func make_driver(parent: Node3D, look: int = -1) -> Array:
+	if look < 0 or look >= _cast.size() or _cast[look] == null:
+		look = _pick_figure(CityLayout.District.DOWNTOWN if _rng.randf() < 0.5 else CityLayout.District.SUBURBS)
+	var tint := _rng.randi_range(0, VARIANTS - 1)
+	var f := _cast[look].instantiate() as Node3D
+	_strip_props(f, false)   # both hands on the wheel
+	f.name = "Driver"
+	var glaze: Dictionary = _overrides[look][tint]
+	for node in f.find_children("*", "MeshInstance3D", true, false):
+		var mi := node as MeshInstance3D
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.visibility_range_end = 60.0
+		if mi.mesh == null:
+			continue
+		for si in mi.mesh.get_surface_count():
+			var src := mi.mesh.surface_get_material(si)
+			if glaze.has(src):
+				mi.set_surface_override_material(si, glaze[src])
+	parent.add_child(f)   # an animation player poses only inside the tree
+	var players := f.find_children("*", "AnimationPlayer", true, false)
+	if not players.is_empty():
+		var anim := players[0] as AnimationPlayer
+		var clip: StringName = &"Drive" if anim.has_animation(&"Drive") else &"Sit"
+		if anim.has_animation(clip):
+			anim.play(clip)
+			anim.seek(0.0, true)
+			anim.pause()
+	return [f, look, tint, _hip_h[look]]
+
+
+## Someone who just got out of a car at `at` (a carjacked or crashed driver): runs away from it along `away`
+## and shouts `line`. `figure` is the seated figure of make_driver() (it becomes this person's), or null for a
+## new one. With `shatter` set the blast that hit the car breaks them at once (porcelain, as always).
+func add_runner(at: Vector3, away: Vector3, look: int, tint: int, figure: Node3D, line: String, shatter: Vector3 = Vector3.ZERO) -> void:
+	var p := _new_person(at)
+	if look >= 0 and look < _cast.size():
+		p.look = look
+	if tint >= 0:
+		p.tint = tint
+	var ground := _ground_under(at + Vector3.UP * 1.5, 4.0)
+	p.pos = Vector3(at.x, ground if is_finite(ground) else at.y, at.z)
+	away.y = 0.0
+	if away.length_squared() < 0.01:
+		away = Vector3(_rng.randf() - 0.5, 0.0, _rng.randf() - 0.5)
+	p.run_dir = away.normalized()
+	p.yaw = atan2(p.run_dir.x, p.run_dir.z)
+	p.block = Vector3(floorf(p.pos.x / BLOCK) * BLOCK + BLOCK * 0.5, 0.0, floorf(p.pos.z / BLOCK) * BLOCK + BLOCK * 0.5)
+	p.off_lane = true
+	p.state = State.PANIC
+	p.speed = _rng.randf_range(4.4, 5.4)
+	p.timer = _rng.randf_range(4.5, 7.0)
+	panics += 1
+	if figure != null and is_instance_valid(figure):
+		figure.reparent(self, false)
+		figure.name = "Person%d" % p.id
+		figure.scale = Vector3.ONE * p.size
+		for node in figure.find_children("*", "MeshInstance3D", true, false):
+			var mi := node as MeshInstance3D
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			mi.visibility_range_end = 0.0
+		p.visual = figure
+		var players := figure.find_children("*", "AnimationPlayer", true, false)
 		p.anim = players[0] as AnimationPlayer if not players.is_empty() else null
-		var glaze: Dictionary = _overrides[p.look][p.tint]
-		for node in p.visual.find_children("*", "MeshInstance3D", true, false):
+	_activate(p)
+	if shatter != Vector3.ZERO:
+		_shatter(p, shatter.normalized(), 0)
+		return
+	if line != "":
+		_say(p, line)
+
+
+## ShaderWarmup: one figure of every kind of person, glazed, standing in a row at `at`, and their porcelain
+## shards (the caller frees them all). Drawing them once behind the loading screen compiles their materials before anyone walks up.
+func sample_figures(at: Vector3) -> Array[Node3D]:
+	var out: Array[Node3D] = []
+	for look in _cast.size():
+		if _cast[look] == null:
+			continue
+		var f := _cast[look].instantiate() as Node3D
+		f.name = "Sample%d" % look
+		add_child(f)
+		f.global_position = at + Vector3(float(look) * 1.2 - _cast.size() * 0.6, 0.0, 0.0)
+		var glaze: Dictionary = _overrides[look][1 % VARIANTS]
+		for node in f.find_children("*", "MeshInstance3D", true, false):
 			var mi := node as MeshInstance3D
 			if mi.mesh == null:
 				continue
@@ -968,6 +1128,63 @@ func _activate(p: Person) -> void:
 				var src := mi.mesh.surface_get_material(si)
 				if glaze.has(src):
 					mi.set_surface_override_material(si, glaze[src])
+		out.append(f)
+	# The porcelain shards of a shattered person, in every glaze: never on screen before the first one breaks
+	# (2026-11-17 bench: 10 ms for each of the first shards).
+	for i in _shards.size():
+		for g in _glazes.size():
+			var mi := MeshInstance3D.new()
+			mi.mesh = _shards[i]
+			mi.material_override = _glazes[g] if g > 0 else null
+			add_child(mi)
+			mi.global_position = at + Vector3(float(i) * 0.5, 1.0 + float(g) * 0.4, 1.5)
+			out.append(mi)
+	return out
+
+
+## Some figures of the packs come with a weapon in the hand (the suit and the sci-fi one a pistol): a
+## porcelain office worker does not carry one. Only the officers of the Owner's response keep theirs.
+static func _strip_props(f: Node3D, keep_pistol: bool) -> void:
+	if keep_pistol:
+		return
+	for n in f.find_children("Pistol*", "Node3D", true, false):
+		n.queue_free()
+
+
+## The figure of a person: its model in its glaze, hidden until it is activated.
+func _make_figure(p: Person) -> void:
+	var t_probe := PerfProbe.begin()
+	p.visual = _cast[p.look].instantiate() as Node3D
+	_strip_props(p.visual, p.officer == 1)
+	p.visual.name = "Person%d" % p.id
+	p.visual.scale = Vector3.ONE * p.size
+	p.visual.visible = false
+	add_child(p.visual)
+	var players := p.visual.find_children("*", "AnimationPlayer", true, false)
+	p.anim = players[0] as AnimationPlayer if not players.is_empty() else null
+	var glaze: Dictionary = _overrides[p.look][p.tint]
+	for node in p.visual.find_children("*", "MeshInstance3D", true, false):
+		var mi := node as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for si in mi.mesh.get_surface_count():
+			var src := mi.mesh.surface_get_material(si)
+			if glaze.has(src):
+				mi.set_surface_override_material(si, glaze[src])
+	PerfProbe.add(&"people_figure", t_probe)
+
+
+func _activate(p: Person) -> void:
+	var t_probe := PerfProbe.begin()
+	_activate_timed(p)
+	PerfProbe.add(&"people_activate", t_probe)
+
+
+func _activate_timed(p: Person) -> void:
+	p.active = true
+	_active_count += 1
+	if p.visual == null:
+		_make_figure(p)
 	p.visual.visible = true
 	p.clip = &""
 	var ground := _ground_under(p.pos + Vector3.UP * 0.5, 4.0)
@@ -1045,6 +1262,12 @@ func restore_state(ids: Array) -> void:
 
 
 func _deactivate(p: Person) -> void:
+	var t_probe := PerfProbe.begin()
+	_deactivate_timed(p)
+	PerfProbe.add(&"people_deactivate", t_probe)
+
+
+func _deactivate_timed(p: Person) -> void:
 	if not p.active:
 		return
 	p.active = false
@@ -1075,7 +1298,7 @@ func _sync(p: Person) -> void:
 
 
 func _play(p: Person, clip: StringName, rate: float) -> void:
-	if p.anim == null:
+	if p.anim == null or not p.active:   # a hidden figure does not animate (it is made ahead of time)
 		return
 	if p.after != &"" and p.anim.is_playing() and clip != p.clip:
 		if clip == p.after:

@@ -1,4 +1,4 @@
-# Cat As Trophe — architecture and shared contracts
+# Trophe As Cat — architecture and shared contracts
 
 Read this before writing any code. It is the contract every module follows.
 
@@ -473,7 +473,7 @@ Public names of the autoloads are contracts; only the owning module changes thei
   purpose: TROPHE AS CAT / CAT AS TROPHE, Trophe, the code at the edge of the Table, the "DO NOT TOUCH" tape.
   Tests that load `main.tscn` directly never call `Lang.setup()`, so they run in English.
 - **Builds (2026-11-17).** `export_presets.cfg` has "Windows Desktop" (the full game:
-  `builds/windows/CatAsTrophe.exe` + `.pck` + the Voxel Tools dll) and "Web" (the browser demo for itch.io:
+  `builds/windows/TropheAsCat.exe` + `.pck` + the Voxel Tools dll) and "Web" (the browser demo for itch.io:
   `builds/web/index.html`, no threads, Compatibility renderer, feature tag "demo"). `builds/` has a `.gdignore`.
   Export headless: `Godot_console.exe --headless --path . --export-release "Web" <abs path>/builds/web/index.html`.
   Voxel Tools has no web build, so: `TerrainShape` names no Voxel Tools class (the generator moved to
@@ -510,8 +510,8 @@ Public names of the autoloads are contracts; only the owning module changes thei
   which a headless export does not have). Bump `_get_customization_configuration_hash()` whenever the plugin's
   logic changes, or the export reuses the old cached results. Store images: `tools/make_store_images.py` from
   screenshots taken with `-- --no-hud` (hides every HUD layer, `Game._no_hud`) and `tests/shot_marketing.tscn`.
-  Publishing: `C:\Tools\butler\butler.exe push builds/web memode/cat-as-trophe:html5 --userversion X` and
-  `... push builds/windows memode/cat-as-trophe:windows --userversion X` (butler is logged in on this machine).
+  Publishing: `C:\Tools\butler\butler.exe push builds/web memode/trophe-as-cat:html5 --userversion X` and
+  `... push builds/windows memode/trophe-as-cat:windows --userversion X` (butler is logged in on this machine).
   `python -I tools/pck_list.py builds/web/index.pck` lists the
   biggest files of a package; `tools/extract_strings.py` lists the user-facing strings (for LangTr).
 - **People's reactions (2026-11-17).** `People` states FILM, CALL, CHASE (appended to the enum). A witness of
@@ -520,6 +520,65 @@ Public names of the autoloads are contracts; only the owning module changes thei
   Trophe may chase her and kick her (`CatController.kicked(dir)`: a short flight, never harm). Getting within
   3 m of a filmer or a caller stops them. `views` is shown by GameHud under the stars, with milestone flashes and
   Owner lines (10K, 100K, 1M, 10M, 100M) and saved in the Jobs state. Test `tests/shot_react.tscn`.
+
+- **Performance and hardware (2026-11-17, evening, version 0.9.2).** Autoload `Perf` (`game/core/perf.gd`,
+  after `Game`): the graphics level (LOW / MEDIUM / HIGH = `WorldLook.Quality`) and `budget(key)` per level
+  (`BUDGETS`: prop / big / inside draw ranges, the building far LOD, the tree LOD bands, people active at once,
+  debris bodies awake, dust density, traffic cars, the resolution floor; `LITE_CAPS` caps the browser demo).
+  `Settings.quality` -1 is Auto (the default; settings files without `quality_v` 2 start on Auto): the starting
+  level comes from `machine_level()` (web or the OpenGL fallback LOW, integrated GPUs LOW or MEDIUM by name, old
+  discrete cards MEDIUM, at most LOW with 4 threads and MEDIUM with 8), then the governor in `Perf._process`
+  (only while Trophe plays, focused, not paused or in slow motion) holds 60 fps (or the display's rate): it
+  moves `Viewport.scaling_3d_scale` first (FSR 1 on Vulkan / D3D12, bilinear on OpenGL; the HUD stays sharp),
+  steps the level down after 3 s at the resolution floor or CPU-bound (GPU time under half the frame) and up
+  after 12 s of plenty, never above the machine's level + 1. `Perf.attach(look)` (main, after the look) drives
+  `WorldLook.set_quality`. Systems read their budget when built and again on `Perf.level_changed`:
+  StreetDressing (`_track_range`: every prop mesh's range by kind, small props cast no shadow on LOW),
+  WorldNature (`tree_lod_ends`), StructureManager (`set_far_lod_distance`), People (`max_active`),
+  DebrisManager (`awake_budget`), DestructionFX (`_density`, proximity fade above LOW), main (traffic cars).
+  Godot 4.7 itself falls back from Vulkan to Direct3D 12 to OpenGL 3 (and ANGLE) on machines without them.
+- **Hitches (2026-11-17, evening).** Found with `tests/bench_perf.tscn` (below) and fixed: the first figure of
+  each kind of person stalled 90 ms (its shaders), ten figures could be made in one tick, the achievement check
+  walked 7,000 props three times a second (now `Achievements._scan_props`, 350 a frame), a blast spawned
+  hundreds of debris pieces in one frame (small pieces past `DebrisManager.spawn_budget_usec` wait in
+  `_deferred` and come in over the next frames, moved along their flight), the porcelain shards' glaze and the
+  debris draw of every material compiled at the first break. `ShaderWarmup` (`game/flow/shader_warmup.gd`,
+  run by Boot behind the loading screen, "preparing the shaders") draws everything once from high above: all
+  hidden parts shown, all draw ranges open, the sun's shadow over the whole city, `People.sample_figures()`
+  (every figure and shard glaze) and `StructureManager.warm_samples()` (every building and prop material as a
+  loose piece, the crack overlay), a burst of every effect 40 m under the ground; then it puts all back.
+  People make at most one figure a tick and make figures up to `WARM_RADIUS` (135 m) ahead, hidden.
+- **Draw calls (2026-11-17, evening).** In the browser demo plants are batched (`WorldNature.build_batches()`,
+  called by main after the plants are placed): every species in every 40 m chunk is one MultiMesh per LOD and
+  part; a batch switches LOD as a whole (bands pushed out by `CHUNK_PAD`); the title view went from 286 to 114
+  draw calls of plants. The PC game keeps one MeshInstance3D per LOD and part (its street trees are too sparse:
+  batches doubled the draws of its shadow cascades). Tree clods are drawn only within 60 m (none in the lite
+  build). Traffic sorts its lanes 20 times a second. Draw-call census of the full city at the landing
+  spot before the batching: 4,168, of which the sun's shadow passes 2,817, buildings 1,166, props 768, trees 305,
+  people 273.
+- **Measuring (2026-11-17).** `tests/bench_perf.tscn` (`-- --lite --quality=N --warmup --title --frames=X
+  --tag=name`, `--rendering-driver opengl3` for the browser's renderer): vsync off, frame by frame the wall time,
+  the script time of each child of main (probe nodes between them), the physics step, the render CPU / GPU time,
+  every frame over 33 ms with its split, a draw-call census (each part hidden for 4 frames) and `PerfProbe`
+  sections (`game/core/perf_probe.gd`: `begin()` / `add(section, stamp)`, off in the game). Hot functions are
+  wrapped (the original is `<name>_timed`). Writes `tests/out/bench_<mode>.json`. `Performance.TIME_PROCESS` is
+  the worst frame of the last second, not the frame's own time.
+- **Drivers and carjacking (2026-11-17, evening).** Every traffic car within `Traffic.DRIVER_RANGE` (75 m)
+  gets a porcelain driver (`People.make_driver(parent, look)`: the figure in its glaze, posed once in the
+  "Drive" clip and paused, no shadow, drawn to 60 m) at `Traffic.seat_transform(car, hip_h)` (seat height and
+  recline from the roof: a sports car's driver leans back), one a tick. `take_car` (F, CatDriving) and a crash
+  (`_crash(c, line, shatter)`) send the driver out of the left door through `People.add_runner()` (a new person
+  wearing the same figure, panicking, shouting a line of `CARJACKED_LINES` / `CRASH_LINES`; a blast that throws
+  the car shatters them). The SWAT van's driver leaves the seat when the unit arrives. Test
+  `tests/shot_carjack.tscn`; `tests/shot_drivers.tscn` shows six seated drivers. The sitting clips ("Sit", "Drive",
+  `People._make_sit`) now move the feet too: these rigs hang `Foot.L` / `Foot.R` from the root (IK targets), so
+  folding the legs left the feet on the floor and stretched the shins (benches hid it, cars showed it); the foot
+  keys go to the end of the folded shin (`_pose_at_start`, forward kinematics on the clip's first keys).
+  Figures of the packs that hold a pistol (`M_Suit`, `W_SciFi`, the SWAT) lose it (`People._strip_props`) unless
+  they are officers. Getting into a car swings the camera behind it (`CatCamera.follow_heading`).
+- **Vehicle fronts (2026-11-17).** `VehicleLibrary` finds a body's long axis without a sign; the compact, the
+  hatchback and the minivan came out with their nose at +Z and drove in reverse (`NOSE_AT_PLUS_Z` turns them).
+  Every vehicle faces -Z (Traffic turns the model to +Z itself). Check `tests/shot_vehicle_fronts.tscn`.
 
 ## 8. How the project is built (process and module map)
 

@@ -8,6 +8,7 @@ extends RefCounted
 const STRINGS := {
 	# Loading.
 	"reading the Table": "Masa okunuyor",
+	"preparing the shaders": "gölgelendiriciler hazırlanıyor",
 	"waking up the Table": "Masa uyandırılıyor",
 	"look and effects": "görünüm ve efektler",
 	"terrain": "arazi",
@@ -64,6 +65,7 @@ const STRINGS := {
 	"Music": "Müzik",
 	"Effects": "Efektler",
 	"Graphics": "Grafik",
+	"Auto": "Otomatik",
 	"Low": "Düşük",
 	"Medium": "Orta",
 	"High": "Yüksek",
@@ -176,6 +178,15 @@ const STRINGS := {
 
 	# The little people.
 	"Nice kitty?": "Uslu pisi?",
+	"My car!": "Arabam!",
+	"Hey! That is MY car!": "Hey! O BENİM arabam!",
+	"Is that cat... driving?!": "O kedi... araba mı kullanıyor?!",
+	"Somebody stop that cat!": "Biri şu kediyi durdursun!",
+	"I just washed it!": "Daha yeni yıkatmıştım!",
+	"Are you kidding me?!": "Şaka mı bu?!",
+	"My insurance...": "Sigortam...",
+	"I am getting out of here!": "Ben buradan gidiyorum!",
+	"Not again!": "Yine mi?!",
 	"Good kitty...": "Aferin pisi...",
 	"Pspsps?": "Pisi pisi?",
 	"Is that a cat?": "Bu bir kedi mi?",

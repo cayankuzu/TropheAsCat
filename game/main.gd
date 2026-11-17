@@ -26,9 +26,8 @@ const DOMINO_SWAY := 2.2
 
 ## Share of the curb slots that hold a parked car (before the district factor).
 const CAR_FILL := 0.32
-## Cars driving on the roads (Traffic); the domino run's stretch of road stays closed to them.
-const TRAFFIC_CARS := 110
-const TRAFFIC_CARS_LITE := 14
+## Cars driving on the roads (Traffic) come from Perf.budget(&"cars"): 110 at the High level, 14 in the
+## browser demo. The domino run's stretch of road stays closed to them.
 
 ## Seconds of play between autosaves.
 const AUTOSAVE_SECONDS := 120.0
@@ -92,6 +91,7 @@ func _build() -> void:
 		ResourceLoader.load_threaded_request(path)
 	look = WORLD_LOOK.instantiate() as WorldLook
 	add_child(look)
+	Perf.attach(look)   # the level the machine runs at; every system below reads its budgets
 	var fx := WorldFX.new()
 	fx.name = "WorldFX"
 	add_child(fx)
@@ -134,6 +134,7 @@ func _build() -> void:
 		for sx: float in [-26.0, 26.0]:
 			nature.add_grove(lawn + Vector3(sx, 0.0, 0.0), 9.0, 5, lawn_seed, false)
 			lawn_seed += 1
+	nature.build_batches()   # every species of every chunk drawn as one batch per LOD
 	await _stage(tr("%d trees") % nature.tree_count(), 0.75)
 
 	# Street furniture, loose things and parked cars on every street; all of it breaks.
@@ -242,9 +243,10 @@ func _build() -> void:
 	# Traffic: cars on the move on every road, a puppet each until something hits it.
 	traffic = Traffic.new()
 	traffic.name = "Traffic"
+	traffic.people = people   # the drivers at the wheel
 	add_child(traffic)
 	var closed: Array[Vector4] = [Vector4(1.0, 0.0, 0.0, CityLayout.BLOCK)]
-	traffic.setup(dressing, lines, TRAFFIC_CARS_LITE if Game.lite else TRAFFIC_CARS, closed)
+	traffic.setup(dressing, lines, int(Perf.budget(&"cars")), closed)
 	# The wild and the farm animals: herds of deer in the outer Park and on the hills, foxes, wolves far
 	# out, the petting farm's paddock and the dogs of the Suburbs. CAT-PROOF as well.
 	wildlife = Wildlife.new()

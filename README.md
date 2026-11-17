@@ -1,13 +1,15 @@
-# Cat As Trophe
+# Trophe As Cat
 
 **A bald cat. A perfect porcelain city. Nothing is off the table.**
 
-Cat As Trophe is a 3D chaos sandbox made with Godot 4.7. You are Trophe, a Sphynx cat dropped onto the
+On screen the name glitches: TROPHE AS CAT becomes **CAT AS TROPHE**. Read it again.
+
+Trophe As Cat is a 3D chaos sandbox made with Godot 4.7. You are Trophe, a Sphynx cat dropped onto the
 Owner's perfect Table: a whole city where everything man-made can be knocked over, shattered, toppled or
 driven into a wall, while the trees and the animals stay CAT-PROOF. Dark humour, no gore: the little people
 are painted porcelain.
 
-**Play:** https://memode.itch.io/cat-as-trophe (browser demo and the full game for Windows)
+**Play:** https://memode.itch.io/trophe-as-cat (browser demo and the full game for Windows)
 
 Türkçe aşağıda.
 
@@ -54,7 +56,7 @@ itch.io. Tests are scenes in `tests/` (see `docs/ARCHITECTURE.md`, section 7). D
 
 ## Credits and rights
 
-Cat As Trophe © 2026 MeMoDe. The code, design and original content are published here for reference; they
+Trophe As Cat © 2026 MeMoDe. The code, design and original content are published here for reference; they
 are not open source. Third-party assets and software keep their own licences (CC0, CC BY 4.0, MIT, OFL): see
 [CREDITS.md](CREDITS.md) and `docs/ASSET_LEDGER.md`. Made with the help of AI tools; the hero cat model is a
 third-party model labelled "Generated with AI".
@@ -65,7 +67,7 @@ third-party model labelled "Generated with AI".
 
 **Kel bir kedi. Kusursuz porselen bir şehir. Masada olmayan hiçbir şey yok.**
 
-Cat As Trophe, Godot 4.7 ile yapılmış 3D bir kaos oyunu. Sen Trophe'sun: Sahip'in kusursuz Masası'na
+Trophe As Cat, Godot 4.7 ile yapılmış 3D bir kaos oyunu. Sen Trophe'sun: Sahip'in kusursuz Masası'na
 bırakılmış bir Sfenks kedisi. İnsan yapımı her şey devrilir, kırılır, yıkılır ya da araba ile duvara girer;
 ağaçlar ve hayvanlar ise KEDİ GEÇİRMEZ. Kara mizah var, kan yok: küçük insanlar boyalı porselendir.
 
@@ -76,7 +78,7 @@ ağaçlar ve hayvanlar ise KEDİ GEÇİRMEZ. Kara mizah var, kan yok: küçük i
 - Masanın altındaki kedilerden on dört iş, kedi otu dükkânı, seviyeler, otuz altın yumak, on sekiz başarım.
 - Türkçe ve İngilizce.
 
-**Oyna:** https://memode.itch.io/cat-as-trophe (tarayıcı demosu ve Windows için tam oyun)
+**Oyna:** https://memode.itch.io/trophe-as-cat (tarayıcı demosu ve Windows için tam oyun)
 
-Cat As Trophe © 2026 MeMoDe. Kod ve özgün içerik referans için yayımlanmıştır, açık kaynak değildir.
+Trophe As Cat © 2026 MeMoDe. Kod ve özgün içerik referans için yayımlanmıştır, açık kaynak değildir.
 Üçüncü taraf içeriklerin lisansları [CREDITS.md](CREDITS.md) dosyasındadır.

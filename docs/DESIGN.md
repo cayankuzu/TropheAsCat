@@ -1,4 +1,4 @@
-# Cat As Trophe — design decisions (binding for the MVP)
+# Trophe As Cat — design decisions (binding for the MVP)
 
 Decided by the lead on 2026-11-13 under the director's standing instruction: "decide everything yourself,
 the most logical choice that is enough for the MVP; coherence and consistency must be AAA, realism is optional."
@@ -264,10 +264,12 @@ Assets that do not fit this look are not discarded: tag them in `docs/ASSET_LEDG
     Table." and, a moment later, "...Again." (later falls get other lines). After five seconds, or at any
     key or click from the first second on, a soft flash, and she drops back onto the Table from the sky at
     a random spot. A game saved while she falls keeps her at the crossing.
-- **Decided 2026-11-17 (the name).** The game is **Cat As Trophe**: CAT-AS-TROPHE reads "catastrophe" spelled
-  right (the old "Cat As Rophe" dropped the t). The cat is Trophe; the line of code that spawned her is
-  `TROPHE AS CAT` and the title gag glitches it into `CAT AS TROPHE`. The rank names follow
-  ("TROPHE-POCALYPSE"). The project folder keeps its old name.
+- **Decided 2026-11-17 (the name, final).** The game is called **Trophe As Cat** everywhere it is listed
+  (itch.io, GitHub, fikkis, the window title, the exe). On screen the name glitches into **CAT AS TROPHE**,
+  which reads "catastrophe": the loading screen and the title show TROPHE AS CAT and the title tears it
+  into CAT AS TROPHE; the opening film types `> spawn(TROPHE AS CAT)` and the same glitch gives CAT AS
+  TROPHE ("...wait. That is not what I typed."). The store art shows both. The cat is Trophe; the rank
+  names follow ("TROPHE-POCALYPSE"). The project folder keeps its old name.
 - **Decided 2026-11-17 (a city of normal size, with different parts).** The city grows from 4 x 4 to 6 x 6 blocks
   (768 m across, ring roads at 256 m and 384 m) and every quarter goes on into an outer ring of its own:
   - *The Strip* (beyond Downtown): malls behind car parks with painted bays (the terrain paints them, so a

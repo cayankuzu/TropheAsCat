@@ -28,9 +28,9 @@ section 7 = APIs and tests). Asset licences: `docs/ASSET_LEDGER.md`.
 
 ## State of the main project
 
-- Builds for itch.io (2026-11-17): `builds/windows/` (the full game: CatAsTrophe.exe + .pck + Voxel Tools dll)
-  and `builds/web/` (the browser demo, index.html), zipped as `builds/CatAsTrophe_Windows.zip` and
-  `builds/CatAsTrophe_Web.zip` (upload the web zip as "HTML", playable in the browser; no SharedArrayBuffer
+- Builds for itch.io (2026-11-17): `builds/windows/` (the full game: TropheAsCat.exe + .pck + Voxel Tools dll)
+  and `builds/web/` (the browser demo, index.html), zipped as `builds/TropheAsCat_Windows.zip` and
+  `builds/TropheAsCat_Web.zip` (upload the web zip as "HTML", playable in the browser; no SharedArrayBuffer
   needed). Re-export after code changes (ARCHITECTURE section 7 "Builds").
 - Playable: `launch_game.bat` (desktop shortcut "Trophe As Cat") runs the project, which starts on
   `res://game/boot.tscn`: a loading screen, the glitching title over a flight round the city, a menu with
@@ -135,6 +135,20 @@ in this order (each tested, then on to the next without asking):
    denser (more streets of shops, a stadium or a train?); a browser demo build (Compatibility renderer, no
    voxel terrain) for itch.io and a Windows build of the full game.
 
+## Version 0.9.2 (2026-11-17, late evening): Trophe As Cat, smooth on any machine, drivers at the wheel
+
+- The name is Trophe As Cat everywhere (itch.io memode.itch.io/trophe-as-cat, the old address redirects;
+  GitHub cayankuzu/TropheAsCat; fikkis; the exe TropheAsCat.exe); on screen it glitches into CAT AS TROPHE.
+  The itch.io page was redesigned like Merbut's (page background, embed background, banner, cover and three
+  wide pictures from `tools/make_store_images.py`, sections, controls tables, the Turkish part, credits).
+- Performance: `Perf` (auto graphics level + dynamic resolution), `ShaderWarmup`, the hitch fixes and the
+  batched plants (ARCHITECTURE section 7: "Performance and hardware", "Hitches", "Draw calls", "Measuring").
+  On this laptop (RTX 5070) the full city went from 100-200 ms hitches every few seconds to none over 33 ms in
+  a quiet stretch.
+- Cars: three models drove in reverse (fixed); traffic cars have drivers who run off shouting when Trophe takes
+  the car or it is hit; suits no longer carry pistols; sitting people's legs are folded properly.
+- Settings: Graphics is Auto / Low / Medium / High (Auto by default).
+
 ## Version 0.9.1 (2026-11-17, night): the meta game
 
 - `Jobs`: 14 jobs (new kinds views, inside, calls, kicks; `_possible()` skips what the city lacks),
@@ -152,14 +166,14 @@ in this order (each tested, then on to the next without asking):
 
 ## Published (2026-11-17, evening)
 
-- itch.io: https://memode.itch.io/cat-as-trophe (MeMoDe's account, like Merbut: dark theme, banner, HTML
+- itch.io: https://memode.itch.io/trophe-as-cat (MeMoDe's account, like Merbut: dark theme, banner, HTML
   kind with the browser demo embedded at 1280x720, the Windows zip as a download, free, "In development",
   genre Action, AI disclosure for graphics, text and code, comments on). Channels `html5` and `windows`,
   version 0.9.0, pushed with butler.
-- GitHub: https://github.com/cayankuzu/CatAsTrophe (public, `main`; `_downloads/`, `_spikes/`, `.godot/`,
+- GitHub: https://github.com/cayankuzu/TropheAsCat (public, `main`; `_downloads/`, `_spikes/`, `.godot/`,
   `builds/` and `tests/out/` are not in it; the ground's texture set is in Git LFS).
 - fikkis (the director's project archive, `Desktop\fikkis`, Next.js on Vercel from `main`): the card
-  "cat-as-trophe" in `src/app/projects.ts`, its English in `src/app/_lib/projects-en.ts`, its place in the
+  "trophe-as-cat" in `src/app/projects.ts`, its English in `src/app/_lib/projects-en.ts`, its place in the
   featured order in `src/app/_lib/project-meta.ts`, previews in `public/project-previews/catastrophe-*.png`.
 
 ## What was done last (2026-11-17, afternoon): languages, builds, a city that films you
@@ -206,7 +220,7 @@ in this order (each tested, then on to the next without asking):
 
 ## Earlier on 2026-11-17 (late night): a bigger city that lives
 
-- The name is now **Cat As Trophe** (catastrophe spelled right); the cat is Trophe, the title gag is
+- The name is now **Trophe As Cat** (catastrophe spelled right); the cat is Trophe, the title gag is
   `TROPHE AS CAT` -> `CAT AS TROPHE`, the desktop shortcut is "Trophe As Cat".
 - Far LOD: a building beyond 240 m is one merged mesh until it loses its first element.
 - The city grew to 6 x 6 blocks: the Strip (malls, car parks with painted bays, fuel stations whose pumps go

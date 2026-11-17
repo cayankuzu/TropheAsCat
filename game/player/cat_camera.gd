@@ -120,6 +120,22 @@ func snap_to_target() -> void:
 	_initialized = true
 
 
+## Driving (CatDriving): the camera swings round behind the car the way the lazy follow swings behind a running
+## cat, once the mouse has been still for a moment; `settle` swings it at once (she just got in).
+func follow_heading(heading: Vector3, speed: float, delta: float, settle: bool = false) -> void:
+	heading.y = 0.0
+	if heading.length_squared() < 0.0001:
+		return
+	var want_yaw := atan2(-heading.x, -heading.z)
+	if settle:
+		yaw = lerp_angle(yaw, want_yaw, 1.0 - exp(-7.0 * delta))
+		pitch = lerp_angle(pitch, deg_to_rad(-13.0), 1.0 - exp(-5.0 * delta))
+		return
+	if _idle_look_t < 0.9 or speed < 2.5:
+		return
+	yaw = lerp_angle(yaw, want_yaw, 1.0 - exp(-2.4 * delta * clampf((speed - 2.5) / 9.0, 0.0, 1.0)))
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var mm := event as InputEventMouseMotion

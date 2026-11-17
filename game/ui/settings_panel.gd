@@ -1,7 +1,7 @@
 class_name SettingsPanel
 extends VBoxContainer
 ## The settings shared by the title and the pause menu (Settings): mouse sensitivity, three volumes, the
-## graphics preset, full screen and the sandbox switch. Every change is applied and saved at once.
+## graphics level (Auto, Low, Medium, High), full screen and the sandbox switch. Every change is applied and saved at once.
 ## Mouse and keyboard both work: arrows move between the rows and change a slider, Enter toggles.
 
 signal closed
@@ -36,18 +36,16 @@ func setup(main: Node) -> void:
 		Settings.apply_audio())
 	var row := _row("Graphics")
 	var pick := OptionButton.new()
-	for q: String in ["Low", "Medium", "High"]:
+	for q: String in ["Auto", "Low", "Medium", "High"]:
 		pick.add_item(q)
-	pick.select(Settings.quality)
+	pick.select(Settings.quality + 1)
 	pick.custom_minimum_size = Vector2(240, 44)
 	pick.add_theme_font_override(&"font", UiKit.font(UiKit.NUNITO, 700))
 	pick.add_theme_font_size_override(&"font_size", 22)
 	pick.item_selected.connect(func(i: int) -> void:
-		Settings.quality = i
+		Settings.quality = i - 1
 		_changed()
-		var look: WorldLook = (_main.get("look") as WorldLook) if _main != null else null
-		if look != null:
-			look.set_quality(i))
+		Perf.set_choice(Settings.quality))
 	row.add_child(pick)
 	var lang_row := _row("Language")
 	var lang := OptionButton.new()

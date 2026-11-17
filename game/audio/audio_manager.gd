@@ -108,6 +108,12 @@ func _ready() -> void:
 
 ## One-shot positional sound. Intensity 0..2 scales the volume (1 is the normal level of the kind).
 func play_3d(kind: StringName, position: Vector3, intensity: float = 1.0) -> void:
+	var t_probe := PerfProbe.begin()
+	play_3d_timed(kind, position, intensity)
+	PerfProbe.add(&"audio_3d", t_probe)
+
+
+func play_3d_timed(kind: StringName, position: Vector3, intensity: float = 1.0) -> void:
 	kind = ALIASES.get(kind, kind)
 	if not _bank.has(kind):
 		return

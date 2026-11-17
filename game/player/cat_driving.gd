@@ -38,6 +38,7 @@ var _engine: AudioStreamPlayer3D
 var _engine_wav: AudioStreamWAV
 var _scan := 0.0
 var _near: Object = null       # the car she could get into (a prop or a traffic car)
+var _cam_settle := 0.0         # seconds the camera still swings round behind the car she got into
 var _hit_cool := {}
 var _saved_layer := 0
 var _saved_mask := 0
@@ -56,8 +57,8 @@ func setup(main: Node, cat: CatPlayer) -> void:
 	add_child(_layer)
 	_prompt = _label(30, HORIZONTAL_ALIGNMENT_CENTER)
 	_prompt.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_prompt.offset_top = -170.0
-	_prompt.offset_bottom = -130.0
+	_prompt.offset_top = -262.0    # above the controls line and the tool belt of the HUD
+	_prompt.offset_bottom = -218.0
 	_prompt.offset_left = -400.0
 	_prompt.offset_right = 400.0
 	_speedo = _label(54, HORIZONTAL_ALIGNMENT_RIGHT)
@@ -119,6 +120,10 @@ func _physics_process(delta: float) -> void:
 		_get_out(true)   # it went up: she is thrown clear
 		return
 	_drive(delta)
+	if _cat.camera != null:
+		var fwd := -car.global_basis.z
+		_cam_settle = maxf(_cam_settle - delta, 0.0)
+		_cat.camera.follow_heading(fwd, absf(car.linear_velocity.dot(fwd.normalized())), delta, _cam_settle > 0.0)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -168,6 +173,7 @@ func _get_in(target: Object) -> void:
 	if _cat.camera != null:
 		_cat.camera.extra_distance = 5.2        # a car needs room behind it
 		_cat.camera.set_arm_exclusion(car.get_rid(), true)
+		_cam_settle = 0.8
 	car.physics_material_override = _wheels
 	_saved_layer = _cat.collision_layer
 	_saved_mask = _cat.collision_mask

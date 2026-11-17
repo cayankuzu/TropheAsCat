@@ -246,6 +246,13 @@ static func _sorted_axes(size: Vector3) -> PackedInt32Array:
 
 ## Returns the cached pattern, or null while it is being computed (the request is queued).
 func get_pattern(size: Vector3, shape_type: int, material: StringName, variant: int, urgent: bool = true) -> Pattern:
+	var t_probe := PerfProbe.begin()
+	var r_probe := get_pattern_timed(size, shape_type, material, variant, urgent)
+	PerfProbe.add(&"fracture_get", t_probe)
+	return r_probe
+
+
+func get_pattern_timed(size: Vector3, shape_type: int, material: StringName, variant: int, urgent: bool = true) -> Pattern:
 	var key := key_for(size, shape_type, material, variant)
 	var p: Pattern = _patterns.get(key)
 	if p != null:

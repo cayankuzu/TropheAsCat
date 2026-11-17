@@ -10,10 +10,10 @@ const ROOT := "res://assets/models/nature/"
 const SOIL_TEXTURE := "res://assets/textures/Ground048/Ground048_2K-JPG_Color.jpg"
 ## The models are authored at about 10 units per metre.
 const UNIT := 0.1
-## End of LOD0, LOD1 and LOD2 in metres from the camera; LOD_MARGIN is the hysteresis around each.
-const LOD_END: Array[float] = [70.0, 170.0, 520.0]
+## The ends of LOD0, LOD1 and LOD2 in metres from the camera come from the graphics level
+## (Perf.tree_lod_ends(): 70 / 170 / 520 m at High, 40 / 100 / 210 m in the browser demo); LOD_MARGIN is the
+## hysteresis around each.
 const LOD_MARGIN := 5.0
-const LOD_END_LITE: Array[float] = [40.0, 100.0, 210.0]   ## the lite build (browser demo)
 
 ## size = multiplier on UNIT; trunk = trunk radius and crown = height of the lowest leaves, in model units.
 const TREES := {
@@ -44,12 +44,27 @@ var trees: Array[StaticBody3D] = []
 var bushes: Array[Node3D] = []
 
 var _parts := {}                    # "species/lod" -> Array of [Mesh, Transform3D]
+## In the browser demo plants are drawn in batches (2026-11-17): every species in every CHUNK x CHUNK square
+## of the Table is one MultiMesh per LOD and per part of its model, instead of a MeshInstance3D for each part
+## of every plant. A batch changes LOD as a whole, by the distance to its middle, so the LOD bands are pushed
+## out by CHUNK_PAD. Nature never moves: build_batches() makes the visuals once, after the plants are placed.
+const CHUNK := 40.0
+const CHUNK_PAD := 14.0
+var _pending := {}                    # species -> {Vector2i chunk: Array[Transform3D] (model frames)}
+var _batches: Array[MultiMeshInstance3D] = []
+var _batch_lod := PackedByteArray()
+## The PC game draws every plant on its own (each LOD mesh with its own band): its street trees stand so far
+## apart that batches cost more draw calls than they saved, in the shadow cascades above all (2026-11-17
+## bench: 305 -> 705 at the landing spot). The browser demo batches (its title view: 286 -> 114).
+var _lod_meshes: Array[MeshInstance3D] = []
+var _lod_index := PackedByteArray()
 var _clod_mesh: CylinderMesh
 var _trunk_shapes := {}             # "radius/height" -> CylinderShape3D
 var _clod_shapes := {}
 
 
 func _ready() -> void:
+	Perf.level_changed.connect(_on_level)
 	# Built with the world: a new material variant costs a shader compile when it is created.
 	var soil := StandardMaterial3D.new()
 	soil.albedo_texture = load(SOIL_TEXTURE) as Texture2D
@@ -109,20 +124,25 @@ func add_tree(species: StringName, at: Vector3, yaw: float = 0.0, size: float = 
 		var a := TAU * i / 4.0
 		low = minf(low, _ground(at.x + cos(a) * clod_r, at.z + sin(a) * clod_r))
 	var clod_top := low - ground - 0.08
-	var clod := MeshInstance3D.new()
-	clod.name = "Clod"
-	clod.mesh = _clod_mesh
-	clod.transform = Transform3D(Basis.from_scale(Vector3(clod_r, clod_h, clod_r)), Vector3(0.0, clod_top - clod_h * 0.5, 0.0))
-	body.add_child(clod)
+	# Under the ground it costs a draw call (and a shadow) for nothing: drawn only near, where digging can bare
+	# it, and not at all where the ground cannot be dug (the browser demo).
+	if not Game.lite:
+		var clod := MeshInstance3D.new()
+		clod.name = "Clod"
+		clod.mesh = _clod_mesh
+		clod.transform = Transform3D(Basis.from_scale(Vector3(clod_r, clod_h, clod_r)), Vector3(0.0, clod_top - clod_h * 0.5, 0.0))
+		clod.visibility_range_end = 60.0
+		clod.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		body.add_child(clod)
 	var clod_col := CollisionShape3D.new()
 	clod_col.name = "ClodShape"
 	clod_col.shape = _cylinder(_clod_shapes, clod_r * 0.8, clod_h)
 	clod_col.position.y = clod_top - clod_h * 0.5
 	body.add_child(clod_col)
 
-	body.add_child(_plant_visual(species, k, yaw))
 	add_child(body)
 	body.global_position = Vector3(at.x, ground, at.z)
+	_queue_plant(species, Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * k), Vector3(at.x, ground, at.z)))
 	trees.append(body)
 	return body
 
@@ -130,10 +150,13 @@ func add_tree(species: StringName, at: Vector3, yaw: float = 0.0, size: float = 
 ## One bush (no collider) on the ground at (at.x, at.z).
 func add_bush(species: StringName, at: Vector3, yaw: float = 0.0, size: float = 1.0) -> Node3D:
 	var info: Dictionary = BUSHES[species]
-	var visual := _plant_visual(species, UNIT * float(info["size"]) * size, yaw)
+	var k := UNIT * float(info["size"]) * size
+	var visual := Node3D.new()   # where it stands (the bush itself is drawn in its batch)
 	visual.name = "%s_%d" % [species, bushes.size()]
 	add_child(visual)
-	visual.global_position = Vector3(at.x, _ground(at.x, at.z), at.z)
+	var spot := Vector3(at.x, _ground(at.x, at.z), at.z)
+	visual.global_position = spot
+	_queue_plant(species, Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * k), spot))
 	bushes.append(visual)
 	return visual
 
@@ -238,26 +261,86 @@ func _ground(x: float, z: float) -> float:
 	return 0.0
 
 
-## The three LODs of a plant under one node; each mesh shows only inside its own distance band.
-func _plant_visual(species: StringName, k: float, yaw: float) -> Node3D:
+## A plant to draw: its model frame (yaw, scale, where it stands) goes into the batch of its species and chunk.
+func _queue_plant(species: StringName, xf: Transform3D) -> void:
+	var per: Dictionary = _pending.get(species, {})
+	var key := Vector2i(floori(xf.origin.x / CHUNK), floori(xf.origin.z / CHUNK))
+	if not per.has(key):
+		per[key] = []
+	(per[key] as Array).append(xf)
+	_pending[species] = per
+
+
+## The batches of every plant placed since the last call: per species and chunk, a MultiMesh for each part
+## of each LOD, its node in the middle of the chunk.
+func build_batches() -> void:
+	var ends := Perf.tree_lod_ends()
+	if not Game.lite:
+		for species: StringName in _pending:
+			for key: Vector2i in _pending[species]:
+				for xf: Transform3D in _pending[species][key]:
+					_plant_visual(species, xf, ends)
+		_pending.clear()
+		return
+	for species: StringName in _pending:
+		var per: Dictionary = _pending[species]
+		for key: Vector2i in per:
+			var frames: Array = per[key]
+			var centre := Vector3((key.x + 0.5) * CHUNK, 0.0, (key.y + 0.5) * CHUNK)
+			for lod in 3:
+				for part: Array in _lod_parts(species, lod):
+					var mm := MultiMesh.new()
+					mm.transform_format = MultiMesh.TRANSFORM_3D
+					mm.mesh = part[0]
+					mm.instance_count = frames.size()
+					for i in frames.size():
+						var xf: Transform3D = frames[i]
+						mm.set_instance_transform(i, Transform3D(xf.basis, xf.origin - centre) * (part[1] as Transform3D))
+					var mmi := MultiMeshInstance3D.new()
+					mmi.multimesh = mm
+					mmi.lod_bias = 1.5   # the engine picks a mesh LOD for the whole batch by its middle
+					mmi.name = "%s_%d_%d_L%d" % [species, key.x, key.y, lod]
+					if lod == 2:
+						mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF   # too far away to tell
+					add_child(mmi)
+					mmi.global_position = centre
+					_set_band(mmi, lod, ends)
+					_batches.append(mmi)
+					_batch_lod.append(lod)
+	_pending.clear()
+
+
+## One plant drawn on its own: the three LODs of its model, each mesh inside its own distance band.
+func _plant_visual(species: StringName, xf: Transform3D, ends: Array[float]) -> void:
 	var visual := Node3D.new()
 	visual.name = "Visual"
-	visual.transform = Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * k), Vector3.ZERO)
-	var ends: Array[float] = LOD_END if not Game.lite else LOD_END_LITE
+	add_child(visual)
+	visual.global_transform = xf
 	for lod in 3:
-		var begin := 0.0 if lod == 0 else ends[lod - 1]
 		for part: Array in _lod_parts(species, lod):
 			var mi := MeshInstance3D.new()
 			mi.mesh = part[0]
 			mi.transform = part[1]
-			mi.visibility_range_begin = begin
-			mi.visibility_range_begin_margin = LOD_MARGIN if lod > 0 else 0.0
-			mi.visibility_range_end = ends[lod]
-			mi.visibility_range_end_margin = LOD_MARGIN
+			_set_mesh_band(mi, lod, ends)
 			if lod == 2:
 				mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF   # too far away to tell
 			visual.add_child(mi)
-	return visual
+			_lod_meshes.append(mi)
+			_lod_index.append(lod)
+
+
+func _set_mesh_band(mi: MeshInstance3D, lod: int, ends: Array[float]) -> void:
+	mi.visibility_range_begin = 0.0 if lod == 0 else ends[lod - 1]
+	mi.visibility_range_begin_margin = LOD_MARGIN if lod > 0 else 0.0
+	mi.visibility_range_end = ends[lod]
+	mi.visibility_range_end_margin = LOD_MARGIN
+
+
+func _set_band(mmi: MultiMeshInstance3D, lod: int, ends: Array[float]) -> void:
+	mmi.visibility_range_begin = 0.0 if lod == 0 else ends[lod - 1] + CHUNK_PAD
+	mmi.visibility_range_begin_margin = LOD_MARGIN if lod > 0 else 0.0
+	mmi.visibility_range_end = ends[lod] + CHUNK_PAD
+	mmi.visibility_range_end_margin = LOD_MARGIN
 
 
 ## Meshes of one LOD file, loaded once: an Array of [Mesh, Transform3D relative to the model root].
@@ -291,3 +374,12 @@ static func _cylinder(cache: Dictionary, radius: float, height: float) -> Cylind
 	shape.height = snappedf(height, 0.1)
 	cache[key] = shape
 	return shape
+
+
+## The graphics level changed: the LOD bands of every batch move with it.
+func _on_level(_level: int) -> void:
+	var ends := Perf.tree_lod_ends()
+	for i in _batches.size():
+		_set_band(_batches[i], _batch_lod[i], ends)
+	for i in _lod_meshes.size():
+		_set_mesh_band(_lod_meshes[i], _lod_index[i], ends)

@@ -194,6 +194,12 @@ func park() -> void:
 
 
 func unpark() -> void:
+	var t_probe := PerfProbe.begin()
+	unpark_timed()
+	PerfProbe.add(&"prop_unpark", t_probe)
+
+
+func unpark_timed() -> void:
 	if not parked:
 		return
 	parked = false
@@ -231,6 +237,12 @@ func restore_wreck() -> void:
 
 
 func receive_damage(hit: DamageHit, _user_id: int) -> void:
+	var t_probe := PerfProbe.begin()
+	receive_damage_timed(hit, _user_id)
+	PerfProbe.add(&"prop_damage", t_probe)
+
+
+func receive_damage_timed(hit: DamageHit, _user_id: int) -> void:
 	if _broken:
 		return
 	if _wrecked and hit.cause_id == _break_cause:
@@ -305,6 +317,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _try_break() -> void:
+	var t_probe := PerfProbe.begin()
+	_try_break_timed()
+	PerfProbe.add(&"prop_break", t_probe)
+
+
+func _try_break_timed() -> void:
 	if wreck and not _wrecked:
 		_become_wreck()
 		return
@@ -366,6 +384,12 @@ func _try_break() -> void:
 
 ## First death of a vehicle: the fuel goes off, the shell is thrown, charred and left burning.
 func _become_wreck() -> void:
+	var t_probe := PerfProbe.begin()
+	_become_wreck_timed()
+	PerfProbe.add(&"prop_wreck", t_probe)
+
+
+func _become_wreck_timed() -> void:
 	Timeline.record_prop(self, &"wreck", global_transform)
 	_wrecked = true
 	_broken = false

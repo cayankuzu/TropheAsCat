@@ -3,11 +3,17 @@ extends Node3D
 ## Cuts single vehicles out of the two vehicle packs. Each pack is one GLB that shows all its vehicles
 ## side by side, turned at showroom angles, in millimetre-like units; the passenger pack even keeps
 ## bodies and wheels as separate siblings. This node loads the packs once, groups wheels with their
-## body, and keeps one hidden prototype per vehicle as a child: +Z along the length, origin on the
-## ground, metres. build() hands out copies.
+## body, and keeps one hidden prototype per vehicle as a child: the length along Z with the FRONT at -Z
+## (the convention of Traffic, CatDriving and the car props), origin on the ground, metres. build() hands
+## out copies.
 
 const PASSENGER_PACK := "res://assets/models/vehicles/passenger_cars.glb"
 const SERVICE_PACK := "res://assets/models/vehicles/service_vehicles.glb"
+
+## The long axis of a body comes out of its vertices without a sign; for these the front lands at +Z and
+## they are turned round (checked by eye on tests/shot_vehicle_fronts.tscn, 2026-11-17: they drove in
+## reverse through the city before).
+const NOSE_AT_PLUS_Z: Array[StringName] = [&"compact", &"hatchback", &"minivan"]
 
 var passenger: Array[StringName] = []   ## Names of the everyday cars (compact, sedan, pickup, ...).
 var service: Array[StringName] = []     ## Names of the service vehicles (taxi, ambulance, citybus, ...).
@@ -137,6 +143,8 @@ func _load_service() -> void:
 ## Stores a prototype built from `parts` (siblings in the pack's hub): the frame is turned so `dir`
 ## becomes +Z and moved to `mid` on the floor, then the pack's own scale is applied on top.
 func _add(vname: StringName, parts: Array[Node3D], dir: Vector3, mid: Vector3, chain: Transform3D) -> void:
+	if NOSE_AT_PLUS_Z.has(vname):
+		dir = -dir
 	var frame := Transform3D(Basis(Vector3.UP, atan2(dir.x, dir.z)), Vector3(mid.x, 0.0, mid.z))
 	var inv := frame.affine_inverse()
 	var proto := Node3D.new()

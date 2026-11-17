@@ -40,6 +40,12 @@ func new_cause_id() -> int:
 
 ## Deliver a point hit to one collider (from a ray or contact result: pass its "collider" and "rid").
 func apply_hit(hit: DamageHit, collider: Object, rid: RID = RID()) -> void:
+	var t_probe := PerfProbe.begin()
+	apply_hit_timed(hit, collider, rid)
+	PerfProbe.add(&"router_hit", t_probe)
+
+
+func apply_hit_timed(hit: DamageHit, collider: Object, rid: RID = RID()) -> void:
 	if hit.cause_id == 0:
 		hit.cause_id = new_cause_id()
 	if not in_reach(hit.position):
@@ -55,6 +61,12 @@ func in_reach(pos: Vector3) -> bool:
 
 ## Deliver a radial hit to everything in hit.radius.
 func apply_blast(hit: DamageHit, world: World3D = null, mask: int = Layers.DAMAGEABLE) -> void:
+	var t_probe := PerfProbe.begin()
+	apply_blast_timed(hit, world, mask)
+	PerfProbe.add(&"router_blast", t_probe)
+
+
+func apply_blast_timed(hit: DamageHit, world: World3D = null, mask: int = Layers.DAMAGEABLE) -> void:
 	if hit.cause_id == 0:
 		hit.cause_id = new_cause_id()
 	if world == null:

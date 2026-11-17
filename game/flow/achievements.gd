@@ -41,6 +41,13 @@ var _toast_head: Label
 var _toast_title: Label
 var _toast_t := 0.0
 var _queue: Array[String] = []
+## The prop counts (fragile things broken, cars wrecked, things broken inside) come from a scan that walks
+## PROPS_PER_FRAME props a frame (2026-11-17: three full passes over 7,000 props once a second made a 10 ms
+## hitch, far more in the browser); _prop_counts holds the last finished pass.
+const PROPS_PER_FRAME := 350
+var _prop_counts := {&"fragile": 0, &"wrecks": 0, &"inside": 0}
+var _scan_counts := {&"fragile": 0, &"wrecks": 0, &"inside": 0}
+var _scan_i := 0
 
 
 func setup(main: Node) -> void:
@@ -86,6 +93,7 @@ func _process(delta: float) -> void:
 		_toast_title.modulate.a = a
 	elif not _queue.is_empty():
 		_show(_queue.pop_front())
+	_scan_props()
 	_check_in -= delta
 	if _check_in > 0.0 or _main == null:
 		return
@@ -119,23 +127,11 @@ func _goal(a: Dictionary) -> float:
 func _stat(stat: StringName) -> float:
 	var people := _main.get("people") as People
 	var jobs := _main.get("jobs") as Jobs
-	var dressing := _main.get("dressing") as StreetDressing
 	match stat:
 		&"breaks":
 			return Progress.breaks_total
 		&"fragile", &"wrecks", &"inside":
-			var n := 0
-			if dressing != null:
-				for p in dressing.props:
-					if not is_instance_valid(p):
-						continue
-					if stat == &"fragile" and p.fragile and p.is_broken():
-						n += 1
-					elif stat == &"wrecks" and p.wreck and (p.is_wreck() or p.is_broken()):
-						n += 1
-					elif stat == &"inside" and p.has_meta(&"inside") and p.is_broken():
-						n += 1
-			return n
+			return _prop_counts[stat]
 		&"people":
 			return people.shattered if people != null else 0.0
 		&"toppled":
@@ -168,6 +164,33 @@ func _stat(stat: StringName) -> float:
 		&"bought":
 			return jobs.owned.size() if jobs != null else 0.0
 	return 0.0
+
+
+## One slice of the pass over the street props; a finished pass replaces the published counts.
+func _scan_props() -> void:
+	if _main == null:
+		return
+	var dressing := _main.get("dressing") as StreetDressing
+	if dressing == null:
+		return
+	var props := dressing.props
+	var end := mini(_scan_i + PROPS_PER_FRAME, props.size())
+	for i in range(_scan_i, end):
+		var p := props[i]
+		if not is_instance_valid(p):
+			continue
+		if p.is_broken():
+			if p.fragile:
+				_scan_counts[&"fragile"] += 1
+			if p.has_meta(&"inside"):
+				_scan_counts[&"inside"] += 1
+		if p.wreck and (p.is_wreck() or p.is_broken()):
+			_scan_counts[&"wrecks"] += 1
+	_scan_i = end
+	if _scan_i >= props.size():
+		_prop_counts = _scan_counts
+		_scan_counts = {&"fragile": 0, &"wrecks": 0, &"inside": 0}
+		_scan_i = 0
 
 
 func _earn(a: Dictionary) -> void:

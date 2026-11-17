@@ -70,6 +70,10 @@ class Car:
 	var paint: Material = null   # one colour over the whole model (the SWAT van)
 	var pull := 0.0          # metres pulled over towards the curb (making way for a siren)
 	var yield_t := 0.0       # seconds it still waits pulled over
+	var width := 1.8
+	var driver: Node3D = null    # the porcelain driver in its seat (near Trophe only, see _seat_driver)
+	var driver_look := -1
+	var driver_tint := -1
 
 
 var cars: Array[Car] = []
@@ -88,6 +92,12 @@ var _ray := PhysicsRayQueryParameters3D.new()
 var _shapes := {}                    # vehicle name -> BoxShape3D
 var _free := PackedFloat32Array()    # per car: metres of free lane ahead of it
 var _cat_at := Vector3.INF
+## The people of the city (set by the composition root): every car near Trophe has one of them at the wheel,
+## seen through the glass, and they get out and run when she takes the car or something hits it.
+var people: People = null
+const DRIVER_RANGE := 75.0
+var _driver_scan := 0
+var _follow_tick := 0
 
 
 ## `count` cars on the roads `lines` (CityLayout.road_lines), none on the `closed` stretches.
@@ -121,7 +131,10 @@ func _physics_process(delta: float) -> void:
 	var player := Game.player
 	var cat_at := player.global_position if player != null and is_instance_valid(player) else Vector3.INF
 	_cat_at = cat_at
-	_follow_distances()
+	# The free road ahead of each car changes slowly: worked out 20 times a second (it sorts every lane).
+	_follow_tick = (_follow_tick + 1) % 3
+	if _follow_tick == 0 or _free.size() != cars.size():
+		_follow_distances()
 	for c in cars:
 		if c.gone:
 			continue
@@ -131,6 +144,12 @@ func _physics_process(delta: float) -> void:
 		elif c.near and d > FAR:
 			_show(c, false)
 		_drive(c, delta, cat_at)
+	# One car a tick is checked for a driver to seat (a figure costs a millisecond or two to make).
+	if people != null and cat_at != Vector3.INF:
+		_driver_scan = (_driver_scan + 1) % cars.size()
+		var dc := cars[_driver_scan]
+		if not dc.gone and dc.near and dc.driver == null and dc.node != null and not dc.parked and dc.pos.distance_to(cat_at) < DRIVER_RANGE:
+			_seat_driver(dc)
 
 
 ## Each car's free road ahead: to the car in front in its lane.
@@ -197,6 +216,9 @@ func _drive(c: Car, delta: float, cat_at: Vector3) -> void:
 	if c.pursuit and not c.turning and cat_at != Vector3.INF and c.pos.distance_to(cat_at) < _arrive_distance(cat_at):
 		c.parked = true
 		c.pursuit = false
+		if c.driver != null and is_instance_valid(c.driver):
+			c.driver.queue_free()   # the officers get out (Police)
+		c.driver = null
 		unit_arrived.emit(c)
 		_sync(c)
 		return
@@ -408,6 +430,12 @@ func _look_ahead(c: Car, cat_at: Vector3) -> void:
 ## Puts a car somewhere on the network: not within 150 m of `away_from` (when given), or, with a `band`,
 ## between band.x and band.y metres from it. `vname` picks the model (otherwise an everyday car).
 func _spawn(c: Car, away_from: Vector3, vname: StringName = &"", band: Vector2 = Vector2.ZERO) -> void:
+	var t_probe := PerfProbe.begin()
+	_spawn_timed(c, away_from, vname, band)
+	PerfProbe.add(&"traffic_spawn", t_probe)
+
+
+func _spawn_timed(c: Car, away_from: Vector3, vname: StringName = &"", band: Vector2 = Vector2.ZERO) -> void:
 	var vehicles := _dressing.vehicles if _dressing != null else null
 	if _dressing != null and vehicles == null:
 		_dressing.park_cars(0.0, 0, PackedFloat32Array(), 0.0)   # loads the vehicle packs
@@ -454,10 +482,17 @@ func _spawn(c: Car, away_from: Vector3, vname: StringName = &"", band: Vector2 =
 		c.node.queue_free()
 		c.node = null
 		c.body = null
+	c.driver = null
 	c.near = false
 
 
 func _show(c: Car, on: bool) -> void:
+	var t_probe := PerfProbe.begin()
+	_show_timed(c, on)
+	PerfProbe.add(&"traffic_show", t_probe)
+
+
+func _show_timed(c: Car, on: bool) -> void:
 	c.near = on
 	if on and c.node == null:
 		_build(c)
@@ -491,6 +526,7 @@ func _build(c: Car) -> void:
 	model.position -= Vector3(box.get_center().x, box.position.y, box.get_center().z)
 	c.length = box.size.z
 	c.height = box.size.y
+	c.width = box.size.x
 	if c.paint != null:
 		for node in model.find_children("*", "MeshInstance3D", true, false):
 			(node as MeshInstance3D).material_override = c.paint
@@ -508,6 +544,52 @@ func _build(c: Car) -> void:
 	c.node.reset_physics_interpolation()
 
 
+## A person of the cast in the driver's seat. The car faces +Z in its body (see _build): the seat is on its
+## left (+X), a little behind the middle of a car, right at the front of a bus or a truck.
+func _seat_driver(c: Car) -> void:
+	var d := people.make_driver(c.body, People.cast_index("M_Swat") if c.unit else -1)
+	var fig: Node3D = d[0]
+	c.driver = fig
+	c.driver_look = d[1]
+	c.driver_tint = d[2]
+	fig.transform = seat_transform(c, float(d[3]))
+
+
+const DRIVER_SCALE := 0.9
+## From the hips to the top of the head of a seated figure at DRIVER_SCALE, metres.
+const DRIVER_TORSO := 0.74
+
+
+## Where the driver's figure goes in the car's body so that, in the Drive pose (People: hips at hip_h over
+## the root, thighs forward, shins to the pedals), the hips rest on the seat and the back leans on it: the
+## lower the roof, the lower the seat and the further back it leans (a sports car), so the head stays inside.
+func seat_transform(c: Car, hip_h: float) -> Transform3D:
+	var big := c.length > 6.2
+	var seat_h := clampf(c.height * 0.37, 0.28, 1.25)
+	var room := (c.height - 0.07 - seat_h) / DRIVER_TORSO
+	var recline := clampf(acos(clampf(room, -1.0, 1.0)), 0.12, 0.6)
+	var hips_z := c.length * 0.5 - 1.6 if big else -c.length * 0.06
+	var seat := Basis(Vector3.RIGHT, -recline).scaled(Vector3.ONE * DRIVER_SCALE)
+	var hip_local := seat * Vector3(0.0, hip_h, 0.0)
+	var hips := Vector3(clampf(c.width * 0.2, 0.3, 0.55), seat_h, hips_z)
+	return Transform3D(seat, hips - hip_local)
+
+
+## The driver gets out of the left door and runs from the car (People.add_runner); with no driver seated
+## yet (she took a car the moment it came near) one is made on the spot.
+func _eject_driver(c: Car, line: String, shatter: Vector3) -> void:
+	if people == null or c.node == null:
+		return
+	var xf := c.node.global_transform
+	var door := xf * Vector3(c.width * 0.5 + 0.55, 0.0, -c.length * 0.05)
+	var away := (xf.basis * Vector3(1.0, 0.0, -0.3)).normalized()
+	var fig := c.driver if c.driver != null and is_instance_valid(c.driver) else null
+	c.driver = null
+	people.add_runner(door, away, c.driver_look, c.driver_tint, fig, line, shatter)
+	c.driver_look = -1
+	c.driver_tint = -1
+
+
 func _sync(c: Car) -> void:
 	if c.node != null and c.near:
 		c.node.global_transform = Transform3D(Basis(Vector3.UP, c.yaw), c.pos)
@@ -520,26 +602,33 @@ func receive_damage(hit: DamageHit, user_id: int) -> void:
 	var c := cars[user_id]
 	if c.gone:
 		return
-	var prop := _crash(c)
+	# A blast that throws the car breaks the porcelain driver; anything less sends them running.
+	var blast := hit.radius > 0.0 and hit.energy > 2.0e5
+	var away := c.pos - hit.position
+	var prop := _crash(c, People.CRASH_LINES[_rng.randi_range(0, People.CRASH_LINES.size() - 1)], away if blast else Vector3.ZERO)
 	if prop != null:
 		prop.receive_damage(hit, 0)
 
 
 ## Leaves the traffic as a car prop moving at the speed it had; a new car takes its place out of sight.
-func _crash(c: Car) -> BreakableProp:
+## Its driver gets out of the door and runs, shouting `line` (or breaks, when `shatter` is set).
+func _crash(c: Car, line: String = "", shatter: Vector3 = Vector3.ZERO) -> BreakableProp:
 	var at := c.pos
 	var yaw := c.yaw
 	var speed := c.speed
 	var vname := c.vname
+	if not c.unit:
+		_eject_driver(c, line, shatter)
 	if c.body != null:
 		DamageRouter.unregister_rid(c.body.get_rid())
 	if _owner.get(c.crossing, -1) == c.id:
 		_owner.erase(c.crossing)
 	c.gone = true
 	if c.node != null:
-		c.node.queue_free()
+		c.node.queue_free()   # with whoever still sat in it
 		c.node = null
 		c.body = null
+	c.driver = null
 	crashed += 1
 	var prop := _dressing.add_vehicle(vname, at, yaw + PI) if _dressing != null else null   # (the model faces -Z)
 	if prop != null:
@@ -560,7 +649,7 @@ func _crash(c: Car) -> BreakableProp:
 func take_car(c: Car) -> BreakableProp:
 	if c == null or c.gone:
 		return null
-	var prop := _crash(c)
+	var prop := _crash(c, People.CARJACKED_LINES[_rng.randi_range(0, People.CARJACKED_LINES.size() - 1)])
 	if prop != null:
 		prop.linear_velocity = Vector3.ZERO
 	return prop
@@ -603,6 +692,7 @@ func retire_unit(c: Car) -> void:
 		c.node.queue_free()
 		c.node = null
 		c.body = null
+	c.driver = null
 	c.near = false
 
 

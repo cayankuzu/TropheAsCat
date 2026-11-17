@@ -302,10 +302,10 @@ func clear() -> void:
 
 
 func _ready() -> void:
-	if Game.lite:
-		# The browser demo on an integrated GPU: the merged far mesh of a building (1 draw call) from 70 m on,
-		# instead of its element groups (tens of draw calls each).
-		far_lod_distance = minf(far_lod_distance, LITE_FAR_LOD)
+	# The merged far mesh of a building (1 draw call) instead of its element groups (tens of draw calls each)
+	# from a distance that follows the graphics level (Perf; 70 m in the browser demo).
+	far_lod_distance = Perf.budget(&"far_lod")
+	Perf.level_changed.connect(func(_l: int) -> void: set_far_lod_distance(Perf.budget(&"far_lod")))
 	crack_material = ShaderMaterial.new()
 	crack_material.shader = CRACK_SHADER
 	_rng.seed = 0x5EED
@@ -430,6 +430,12 @@ func _create_body(b: Building, i: int) -> void:
 
 
 func _make_proxy(b: Building) -> void:
+	var t_probe := PerfProbe.begin()
+	_make_proxy_timed(b)
+	PerfProbe.add(&"sm_proxy", t_probe)
+
+
+func _make_proxy_timed(b: Building) -> void:
 	if b.proxy.is_valid():
 		return
 	b.proxy_shape = BoxShape3D.new()
@@ -456,6 +462,12 @@ func _drop_proxy(b: Building) -> void:
 
 ## Gives a dormant building all its element bodies now (damage does this; proximity wakes it gradually).
 func wake_building(bid: int) -> void:
+	var t_probe := PerfProbe.begin()
+	wake_building_timed(bid)
+	PerfProbe.add(&"sm_wake", t_probe)
+
+
+func wake_building_timed(bid: int) -> void:
 	var b := buildings[bid]
 	if b.awake:
 		return
@@ -551,6 +563,12 @@ func _update_dormancy() -> void:
 
 
 func _on_router_blast(hit: DamageHit) -> void:
+	var t_probe := PerfProbe.begin()
+	_on_router_blast_timed(hit)
+	PerfProbe.add(&"sm_blast", t_probe)
+
+
+func _on_router_blast_timed(hit: DamageHit) -> void:
 	_last_blast = hit
 
 
@@ -2203,6 +2221,65 @@ func _merge_design(d: BuildingData) -> ArrayMesh:
 		(tools[mname] as SurfaceTool).commit(out)
 		out.surface_set_material(out.get_surface_count() - 1, ElementLibrary.surface_material(mname))
 	return out
+
+
+## ShaderWarmup: a small block of every material the city's buildings (and `extra`, the props) are made of,
+## drawn the way a loose piece of debris is (not instanced), plus the crack overlay on one of each kind of
+## draw: what the first fracture of each material would otherwise compile in play. The caller frees them.
+func warm_samples(at: Vector3, extra: Array[StringName] = []) -> Array[Node3D]:
+	var names := {}
+	var seen := {}
+	for b in buildings:
+		var key := b.data.get_instance_id()
+		if seen.has(key):
+			continue
+		seen[key] = true
+		for i in b.data.count():
+			names[b.data.material_name(i)] = true
+	for n in extra:
+		names[n] = true
+	var out: Array[Node3D] = []
+	var k := 0
+	for n: StringName in names:
+		var mi := MeshInstance3D.new()
+		mi.mesh = ElementLibrary.mesh(Vector3(0.4, 0.4, 0.4), D.Shape.BOX, n)
+		add_child(mi)
+		mi.global_position = at + Vector3(float(k % 12) * 0.6, floorf(k / 12.0) * 0.6, -2.0)
+		out.append(mi)
+		k += 1
+	if not names.is_empty():
+		var first: StringName = names.keys()[0]
+		var cracked := MeshInstance3D.new()
+		cracked.mesh = ElementLibrary.mesh(Vector3(0.4, 0.4, 0.4), D.Shape.BOX, first)
+		cracked.material_overlay = crack_material
+		add_child(cracked)
+		cracked.global_position = at + Vector3(0.0, -1.0, -2.0)
+		out.append(cracked)
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = cracked.mesh
+		mm.instance_count = 1
+		mm.set_instance_transform(0, Transform3D.IDENTITY)
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		mmi.material_overlay = crack_material
+		add_child(mmi)
+		mmi.global_position = at + Vector3(1.0, -1.0, -2.0)
+		out.append(mmi)
+	return out
+
+
+## Moves the distance where buildings turn into their far mesh (the graphics level changed).
+func set_far_lod_distance(metres: float) -> void:
+	if Game.lite:
+		metres = minf(metres, LITE_FAR_LOD)
+	if is_equal_approx(metres, far_lod_distance):
+		return
+	far_lod_distance = metres
+	for b in buildings:
+		if b.far != null:
+			b.far.visibility_range_begin = far_lod_distance
+			_far_show(b, b.far.visible)
 
 
 ## on: the far mesh takes over beyond far_lod_distance; off: the elements are drawn at every distance.

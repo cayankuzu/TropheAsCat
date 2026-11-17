@@ -66,6 +66,9 @@ func _load_main() -> void:
 
 
 func _on_world_ready() -> void:
+	# Every material drawn once behind the loading screen (see ShaderWarmup): no shader stalls in play.
+	loading.set_progress(1.0, "preparing the shaders")
+	await ShaderWarmup.run(main, camera)
 	var slot := pending_slot
 	pending_slot = -1
 	if slot >= 0 and SaveGame.exists(slot):
