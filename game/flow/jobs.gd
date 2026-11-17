@@ -20,6 +20,23 @@ const JOBS := [
 	{"id": &"topple", "from": "Madame Claw", "title": "URBAN RENEWAL", "ask": "Bring a whole building down", "line": "That building was blocking my view of the other building.", "kind": &"topple", "goal": 1, "time": 0.0, "pay": 200, "at": Vector3(100.0, 0.0, 100.0)},
 	{"id": &"crane", "from": "Socks", "title": "HEAVY LIFTING", "ask": "Knock the tower crane over", "line": "It lifts things all day and never says thank you. Smug.", "kind": &"crane", "goal": 1, "time": 0.0, "pay": 200, "at": Vector3(250.0, 0.0, -300.0)},
 	{"id": &"clock", "from": "Old Grey", "title": "CLOCK OUT", "ask": "Topple the clock tower", "line": "It chimes at six in the morning. I am a cat. I do not do six in the morning.", "kind": &"tower", "goal": 1, "time": 0.0, "pay": 200, "at": Vector3(-110.0, 0.0, -100.0)},
+	{"id": &"viral", "from": "Mochi", "title": "GO VIRAL", "ask": "Get 50,000 views on the people's phones", "line": "Content is content, darling. Give them something to film.", "kind": &"views", "goal": 50000, "time": 0.0, "pay": 120, "at": Vector3(-60.0, 0.0, 14.0)},
+	{"id": &"office", "from": "Pickles", "title": "OFFICE SPACE", "ask": "Break 25 things inside the buildings", "line": "They sit in there all day and not one of them has ever fed a cat.", "kind": &"inside", "goal": 25, "time": 0.0, "pay": 100, "at": Vector3(60.0, 0.0, -14.0)},
+	{"id": &"wanted", "from": "Shadow", "title": "WANTED POSTER", "ask": "Get reported to the police 3 times", "line": "A cat with no record is a cat with no story.", "kind": &"calls", "goal": 3, "time": 0.0, "pay": 90, "at": Vector3(14.0, 0.0, -100.0)},
+	{"id": &"fight", "from": "Bruiser", "title": "STREET FIGHT", "ask": "Make 3 humans angry enough to kick you", "line": "Let them try. You land on your feet. They land in therapy.", "kind": &"kicks", "goal": 3, "time": 0.0, "pay": 70, "at": Vector3(-100.0, 0.0, 60.0)},
+]
+
+## The catnip shop (2026-11-17, a page of the pause menu): boosts and early tools for the catnip of the jobs.
+## A tool item counts as owned once the tool is unlocked, whichever way that happened.
+const SHOP := [
+	{"id": &"springy", "title": "SPRINGY PAWS", "desc": "Jump 15 percent higher", "cost": 80},
+	{"id": &"zoomies", "title": "ZOOMIES", "desc": "Gallop 12 percent faster", "cost": 100},
+	{"id": &"lungs", "title": "BIG LUNGS", "desc": "A meow scares people twice as far", "cost": 60},
+	{"id": &"paparazzi", "title": "PAPARAZZI MAGNET", "desc": "Every phone brings twice the views", "cost": 120},
+	{"id": &"lawyer", "title": "LAWYER CAT", "desc": "Police calls bring half the heat", "cost": 100},
+	{"id": &"hat", "title": "WIZARD HAT", "desc": "Unlock the wizard hat now", "cost": 150, "tool": &"wizard_hat"},
+	{"id": &"cannon", "title": "HAIRBALL CANNON", "desc": "Unlock the hairball cannon now", "cost": 200, "tool": &"hairball"},
+	{"id": &"acid", "title": "ACID PEE", "desc": "Upgrade the pee to acid now", "cost": 180, "tool": &"acid"},
 ]
 const YARN_COUNT := 30
 const YARN_PAY := 10
@@ -32,6 +49,8 @@ var done: Array[StringName] = []
 var catnip := 0
 var level := 1
 var yarn_found := PackedInt32Array()
+var owned: Array[StringName] = []   ## SHOP items bought
+var spent := 0                       ## catnip spent in the shop
 var current := -1          ## index into JOBS of the job under way, -1 none
 var offered := -1          ## index of the job waiting at its marker
 
@@ -170,6 +189,20 @@ func _measure(kind: StringName) -> float:
 				return 0
 			var g: Giant = sp.wheel if kind == &"wheel" else (sp.crane if kind == &"crane" else sp.tower)
 			return 1.0 if g != null and g.released else 0.0
+		&"views":
+			var watchers: People = _main.get("people")
+			return watchers.views if watchers != null else 0.0
+		&"inside":
+			var n := 0
+			for p in dressing.props:
+				if is_instance_valid(p) and p.has_meta(&"inside") and p.is_broken():
+					n += 1
+			return n
+		&"calls", &"kicks":
+			var crowd: People = _main.get("people")
+			if crowd == null:
+				return 0.0
+			return crowd.calls if kind == &"calls" else crowd.kicks
 	return 0.0
 
 
@@ -184,6 +217,8 @@ func _possible(job: Dictionary) -> bool:
 	match job["kind"]:
 		&"pumps":
 			return city == null or not city.forecourts.is_empty()
+		&"inside":
+			return not Game.lite   # the lite build has no furniture inside
 		&"crane":
 			return sp == null or sp.crane != null
 		&"tower":
@@ -273,12 +308,52 @@ func _status() -> String:
 	return tr("%d catnip   level %d   yarn %d/%d") % [catnip, level, yarn_found.size(), YARN_COUNT]
 
 
+func owns(item: Dictionary) -> bool:
+	if item.has("tool") and Progress.is_tool_unlocked(item["tool"]):
+		return true
+	return owned.has(item["id"])
+
+
+func can_buy(item: Dictionary) -> bool:
+	return not owns(item) and catnip >= int(item["cost"])
+
+
+## Pays for an item of SHOP with catnip; false when it is owned or too dear.
+func buy(id: StringName) -> bool:
+	for item: Dictionary in SHOP:
+		if item["id"] == id and can_buy(item):
+			catnip -= int(item["cost"])
+			spent += int(item["cost"])
+			owned.append(id)
+			if item.has("tool"):
+				Progress.grant_tool(item["tool"])
+			_apply_level()
+			return true
+	return false
+
+
+## How many of the jobs this city can offer (the browser demo's small city has no fuel station, no crane).
+func possible_count() -> int:
+	var n := 0
+	for job: Dictionary in JOBS:
+		if _possible(job):
+			n += 1
+	return n
+
+
 func _apply_level() -> void:
+	var people := _main.get("people") as People if _main != null else null
+	if people != null:
+		people.meow_radius = 18.0 if owned.has(&"lungs") else 9.0
+		people.views_mult = 2.0 if owned.has(&"paparazzi") else 1.0
+	var chaos := _main.get("chaos") as Chaos if _main != null else null
+	if chaos != null:
+		chaos.call_heat_mult = 0.5 if owned.has(&"lawyer") else 1.0
 	if _cat == null:
 		return
 	var k := 1.0 + 0.06 * (level - 1)
-	_cat.jump_height = 1.6 * k
-	_cat.gallop_speed = 13.0 * (1.0 + 0.03 * (level - 1))
+	_cat.jump_height = 1.6 * k * (1.15 if owned.has(&"springy") else 1.0)
+	_cat.gallop_speed = 13.0 * (1.0 + 0.03 * (level - 1)) * (1.12 if owned.has(&"zoomies") else 1.0)
 
 
 func _show_banner(text: String, seconds: float) -> void:
@@ -353,7 +428,7 @@ func radar_blips() -> Array:
 
 func save_state() -> Dictionary:
 	var people := _main.get("people") as People if _main != null else null
-	return {"done": done.map(func(s: StringName) -> String: return String(s)), "catnip": catnip, "level": level, "yarn": Array(yarn_found), "views": people.views if people != null else 0.0}
+	return {"done": done.map(func(s: StringName) -> String: return String(s)), "catnip": catnip, "level": level, "yarn": Array(yarn_found), "views": people.views if people != null else 0.0, "owned": owned.map(func(s: StringName) -> String: return String(s)), "spent": spent}
 
 
 func restore_state(state: Dictionary) -> void:
@@ -361,6 +436,10 @@ func restore_state(state: Dictionary) -> void:
 	for s: Variant in state.get("done", []):
 		done.append(StringName(String(s)))
 	catnip = int(state.get("catnip", 0))
+	spent = int(state.get("spent", 0))
+	owned.clear()
+	for s: Variant in state.get("owned", []):
+		owned.append(StringName(String(s)))
 	var people := _main.get("people") as People if _main != null else null
 	if people != null:
 		people.views = float(state.get("views", 0.0))

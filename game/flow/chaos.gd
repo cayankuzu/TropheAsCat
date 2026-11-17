@@ -35,6 +35,7 @@ var best_stars := 0
 var quiet := 0.0
 ## Set by the Police while one of its units or people is close to her: the heat does not fall.
 var watched := false
+var call_heat_mult := 1.0   ## the shop's LAWYER CAT halves it
 
 var _last_chain := 0
 var _voice: OwnerVoice = null
@@ -93,7 +94,7 @@ func setup(main: Node) -> void:
 	var people := main.get("people") as People
 	if people != null:
 		people.person_shattered.connect(_on_person)
-		people.called_police.connect(func(_at: Vector3) -> void: add(CALL_HEAT))
+		people.called_police.connect(func(_at: Vector3) -> void: add(CALL_HEAT * call_heat_mult))
 	var sm := Game.structures as StructureManager
 	if sm != null:
 		sm.building_toppled.connect(_on_topple)

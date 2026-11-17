@@ -135,6 +135,21 @@ in this order (each tested, then on to the next without asking):
    denser (more streets of shops, a stadium or a train?); a browser demo build (Compatibility renderer, no
    voxel terrain) for itch.io and a Windows build of the full game.
 
+## Version 0.9.1 (2026-11-17, night): the meta game
+
+- `Jobs`: 14 jobs (new kinds views, inside, calls, kicks; `_possible()` skips what the city lacks),
+  `SHOP` / `owns()` / `can_buy()` / `buy()` (catnip; boosts applied in `_apply_level()`: jump, gallop,
+  `People.meow_radius`, `People.views_mult`, `Chaos.call_heat_mult`; tools through `Progress.grant_tool()`),
+  saved as "owned" and "spent" in the Jobs state. Props inside buildings carry the meta "inside".
+- `Achievements` (`game/flow/achievements.gd`, node made in `main.begin()`): 18 entries, checked once a
+  second, earned ones in `Achievements.path` (user://achievements.cfg; tests point it elsewhere), a gold
+  toast. Pause menu pages "Catnip shop" and "Achievements". Test `tests/shot_meta.tscn`. Scenes under
+  `res://tests/` keep their achievements in user://test_achievements.cfg, never in the player's file.
+- Known flaky check: `shot_boot` compares the fallen dominoes before and after a load; a save taken while
+  dominoes are still falling stores tiles mid-fall, and after the load some of them settle differently (seen
+  22/22 and 24/12 in two runs on 2026-11-17). Fix idea: save only tiles at rest, or let restored tiles finish
+  their fall before counting.
+
 ## Published (2026-11-17, evening)
 
 - itch.io: https://memode.itch.io/cat-as-trophe (MeMoDe's account, like Merbut: dark theme, banner, HTML

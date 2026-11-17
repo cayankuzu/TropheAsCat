@@ -122,6 +122,8 @@ var _cast_rude: Array[bool] = []
 var _phone_box: BoxMesh = null
 ## Views of her chaos on the phones of the city (FILM witnesses add them; the HUD shows them, Jobs saves them).
 var views := 0.0
+var views_mult := 1.0             ## the shop's PAPARAZZI MAGNET doubles it
+var meow_radius := 9.0            ## the shop's BIG LUNGS doubles it
 var calls := 0
 var kicks := 0
 var _overrides: Array = []        # per figure, per variant: {source material: glazed material}
@@ -512,7 +514,7 @@ func _tick_active(p: Person, delta: float, cat_at: Vector3) -> void:
 			var seen := p.focus - p.pos
 			p.yaw = lerp_angle(p.yaw, atan2(seen.x, seen.z), minf(delta * 5.0, 1.0))
 			_play(p, &"Idle_Gun_Pointing", 1.0)
-			views += VIEWS_PER_SECOND * delta
+			views += VIEWS_PER_SECOND * views_mult * delta
 			p.timer -= delta
 			if (cat_at - p.pos).length_squared() < 9.0:
 				_scare(p, cat_at, 5.0)   # she came for the phone
@@ -901,7 +903,7 @@ func _spawn_head(at: Vector3, velocity: Vector3, glaze: Material = null) -> void
 func _unhandled_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key != null and key.pressed and not key.echo and key.physical_keycode == KEY_M and Game.player != null:
-		scare(Game.player.global_position, 9.0)
+		scare(Game.player.global_position, meow_radius)
 
 
 func _on_blast(hit: DamageHit) -> void:

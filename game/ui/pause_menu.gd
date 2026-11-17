@@ -109,6 +109,8 @@ func _show_main() -> void:
 	var first := _button("Resume", resume)
 	_button("Save game", func() -> void: _show_slots("save"))
 	_button("Load game", func() -> void: _show_slots("load"))
+	_button("Catnip shop", _show_shop)
+	_button("Achievements", _show_achievements)
 	_button("Settings", _show_settings)
 	_button("Quit to title", func() -> void:
 		_main.call(&"save_game", SaveGame.AUTOSAVE)
@@ -150,6 +152,57 @@ func _show_settings() -> void:
 	panel.setup(_main)
 	panel.closed.connect(_show_main)
 	panel.focus_first()
+
+
+## The catnip shop: what the jobs paid for, one button an item.
+func _show_shop() -> void:
+	_page = "shop"
+	_clear()
+	var jobs := _main.get("jobs") as Jobs
+	if jobs == null:
+		_show_main()
+		return
+	_body.add_child(UiKit.label(tr("CATNIP SHOP") + "  -  " + tr("%d catnip") % jobs.catnip, 26, UiKit.FREDOKA, 600))
+	var first: Button = null
+	for item: Dictionary in Jobs.SHOP:
+		var have := jobs.owns(item)
+		var price := tr("OWNED") if have else tr("%d catnip") % int(item["cost"])
+		var b := _button("%s  -  %s  -  %s" % [tr(item["title"]), tr(item["desc"]), price], func() -> void:
+			if jobs.buy(item["id"]):
+				Audio.play_ui(&"owner_chime", -4.0)
+				_show_shop())
+		b.add_theme_font_size_override(&"font_size", 17)
+		b.disabled = not jobs.can_buy(item)
+		if first == null and not b.disabled:
+			first = b
+	var back := _button("Back", _show_main)
+	(first if first != null else back).grab_focus()
+
+
+## Every achievement: the earned ones in gold, the others with how far along they are.
+func _show_achievements() -> void:
+	_page = "achievements"
+	_clear()
+	var ach := _main.get("achievements") as Achievements
+	if ach == null:
+		_show_main()
+		return
+	_body.add_child(UiKit.label(tr("ACHIEVEMENTS") + "  -  %d / %d" % [ach.earned.size(), Achievements.LIST.size()], 26, UiKit.FREDOKA, 600))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0.0, 380.0)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	_body.add_child(scroll)
+	for a: Dictionary in Achievements.LIST:
+		var got := ach.earned.has(a["id"])
+		var p := ach.progress(a)
+		var line := ("+ " if got else "- ") + tr(a["title"]) + "  -  " + tr(a["desc"])
+		if not got and p.y > 1.0:
+			line += "  (%d / %d)" % [int(p.x), int(p.y)]
+		list.add_child(UiKit.label(line, 17, UiKit.NUNITO, 600, Color(1.0, 0.86, 0.35) if got else Color(1.0, 1.0, 1.0, 0.72)))
+	_button("Back", _show_main).grab_focus()
 
 
 func _button(text: String, action: Callable) -> Button:

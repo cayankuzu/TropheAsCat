@@ -387,6 +387,21 @@ the call gets through; Trophe can stop it by going for the caller), and the rude
 kick her away (a short flight; she cannot be hurt). It is the game's own joke about why it goes viral, and a
 long-term number to chase that is saved with the jobs.
 
+## 7c. Reasons to come back (decided 2026-11-17)
+
+- **Fourteen jobs** from the cats under the Table; the four new ones use the city's reactions: GO VIRAL
+  (50,000 views), OFFICE SPACE (break 25 things inside), WANTED POSTER (get reported three times), STREET
+  FIGHT (make three humans angry enough to kick you). Jobs the city cannot offer (the demo has no fuel
+  station, no crane yard, no furniture inside) are skipped.
+- **The catnip shop** (pause menu): what the jobs pay buys boosts (higher jumps, a faster gallop, a meow that
+  carries twice as far, twice the views, half the heat from police calls) and the tools before their
+  milestone (wizard hat, hairball cannon, acid pee). Bought things are saved with the game.
+- **Eighteen achievements** (pause menu, and a gold toast when one is earned) that count across every game:
+  first crack, a hundred fragile things, porcelain people, buildings, five stars, a million views, cars,
+  kilometres driven, every giant, every yarn, every job, a tenth of the Table, a chain of fifty, things
+  inside, kicks, police reports, catnip earned, the first purchase. Kept outside the save slots: once
+  earned, always earned.
+
 ## 7b. Builds (decided 2026-11-17)
 
 itch.io gets two things: the full game as a Windows download (size does not matter) and a browser demo. The

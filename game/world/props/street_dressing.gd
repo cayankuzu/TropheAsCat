@@ -204,6 +204,7 @@ func add_prop(id: StringName, at: Vector3, yaw: float = 0.0, on_ground: bool = t
 	prop.reset_physics_interpolation()
 	props.append(prop)
 	if inside:
+		prop.set_meta(&"inside", true)   # counted by the OFFICE SPACE job and the HOUSE CALL achievement
 		for node in prop.find_children("*", "MeshInstance3D", true, false):
 			var mi := node as MeshInstance3D
 			mi.visibility_range_end = minf(mi.visibility_range_end, 45.0) if mi.visibility_range_end > 0.0 else 45.0

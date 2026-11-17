@@ -112,6 +112,12 @@ func cleared_percent() -> float:
 	return clampf(100.0 * destroyed_mass / total_mass, 0.0, 100.0)
 
 
+## A tool bought in the catnip shop (Jobs.buy): unlocked now, saved with the others.
+func grant_tool(tool_id: StringName) -> void:
+	_unlocked[tool_id] = true
+	tool_unlocked.emit(tool_id)
+
+
 func is_tool_unlocked(tool_id: StringName) -> bool:
 	return sandbox_all_tools or tool_id == TOOL_PAW or tool_id == TOOL_PEE or _unlocked.has(tool_id)
 

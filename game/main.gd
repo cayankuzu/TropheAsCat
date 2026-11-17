@@ -52,6 +52,7 @@ var set_pieces: SetPieces
 var driving: CatDriving
 var game_hud: GameHud
 var jobs: Jobs
+var achievements: Achievements
 var cat: CharacterBody3D
 var hud: MiniHud
 var owner_voice: OwnerVoice
@@ -320,6 +321,10 @@ func begin(at: Vector3 = SPAWN) -> void:
 	jobs.name = "Jobs"
 	add_child(jobs)
 	jobs.setup(self, player)
+	achievements = Achievements.new()
+	achievements.name = "Achievements"
+	add_child(achievements)
+	achievements.setup(self)
 	load_report.append("cat and HUD %d ms" % int((Time.get_ticks_usec() - t0) / 1000.0))
 
 

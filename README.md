@@ -21,8 +21,8 @@ Türkçe aşağıda.
   the Owner sends cleanup robots.
 - **Drive anything:** press F at a parked or passing car. 110 cars of traffic, a Ferris wheel that rolls away,
   a tower crane, a clock tower.
-- **Jobs from the cats under the Table:** ten errands, catnip, levels, thirty golden balls of yarn, viral
-  milestones.
+- **Jobs from the cats under the Table:** fourteen jobs, catnip to spend in the catnip shop (boosts and
+  early tools), levels, thirty golden balls of yarn, eighteen achievements, viral milestones.
 - **Toys:** paw, pee (and acid pee), laser dot, wizard hat (fireballs), hairball cannon, slow motion and a
   world rewind; the ground can be dug by blasts (desktop).
 - **English and Turkish.**
@@ -73,7 +73,7 @@ ağaçlar ve hayvanlar ise KEDİ GEÇİRMEZ. Kara mizah var, kan yok: küçük i
 - 338 porselen insan yürür, oturur, kaosunu telefonla çeker (her telefon izlenme getirir), polisi arar, peşine düşer.
 - Kaos yıldızları: polis, barikat, itfaiye, özel harekât; Sahip'in temizlik robotları.
 - F ile istediğin arabaya bin; dönme dolap, kule vinci, saat kulesi.
-- Masanın altındaki kedilerden on iş, kedi otu, seviyeler, otuz altın yumak.
+- Masanın altındaki kedilerden on dört iş, kedi otu dükkânı, seviyeler, otuz altın yumak, on sekiz başarım.
 - Türkçe ve İngilizce.
 
 **Oyna:** https://memode.itch.io/cat-as-trophe (tarayıcı demosu ve Windows için tam oyun)
