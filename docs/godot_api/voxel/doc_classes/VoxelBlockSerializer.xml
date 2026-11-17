@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelBlockSerializer" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="deserialize_from_byte_array" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="voxel_buffer" type="VoxelBuffer" />
+			<param index="2" name="decompress" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="deserialize_from_stream_peer" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="peer" type="StreamPeer" />
+			<param index="1" name="voxel_buffer" type="VoxelBuffer" />
+			<param index="2" name="size" type="int" />
+			<param index="3" name="decompress" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="serialize_to_byte_array" qualifiers="static">
+			<return type="PackedByteArray" />
+			<param index="0" name="voxel_buffer" type="VoxelBuffer" />
+			<param index="1" name="compress" type="int" enum="VoxelBlockSerializer.Compression" />
+			<description>
+			</description>
+		</method>
+		<method name="serialize_to_stream_peer" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="peer" type="StreamPeer" />
+			<param index="1" name="voxel_buffer" type="VoxelBuffer" />
+			<param index="2" name="compress" type="int" enum="VoxelBlockSerializer.Compression" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="COMPRESSION_NONE" value="0" enum="Compression">
+		</constant>
+		<constant name="COMPRESSION_LZ4" value="1" enum="Compression">
+		</constant>
+		<constant name="COMPRESSION_ZSTD" value="2" enum="Compression">
+		</constant>
+	</constants>
+</class>

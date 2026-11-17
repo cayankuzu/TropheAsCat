@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelBlockyModel" inherits="Resource" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_material_override" qualifiers="const">
+			<return type="Material" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh_ortho_rotation_index" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_mesh_collision_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="surface_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="rotate_90">
+			<return type="void" />
+			<param index="0" name="axis" type="int" enum="Vector3i.Axis" />
+			<param index="1" name="clockwise" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_material_override">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="material" type="Material" />
+			<description>
+			</description>
+		</method>
+		<method name="set_mesh_collision_enabled">
+			<return type="void" />
+			<param index="0" name="surface_index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_mesh_ortho_rotation_index">
+			<return type="void" />
+			<param index="0" name="i" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_aabbs" type="AABB[]" setter="set_collision_aabbs" getter="get_collision_aabbs" default="[]">
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		</member>
+		<member name="culls_neighbors" type="bool" setter="set_culls_neighbors" getter="get_culls_neighbors" default="true">
+		</member>
+		<member name="lod_skirts_enabled" type="bool" setter="set_lod_skirts_enabled" getter="get_lod_skirts_enabled" default="true">
+		</member>
+		<member name="random_tickable" type="bool" setter="set_random_tickable" getter="is_random_tickable" default="false">
+		</member>
+		<member name="tags_mask" type="int" setter="set_tags_mask" getter="get_tags_mask" default="1">
+		</member>
+		<member name="transparency_index" type="int" setter="set_transparency_index" getter="get_transparency_index" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="SIDE_NEGATIVE_X" value="1" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_X" value="0" enum="Side">
+		</constant>
+		<constant name="SIDE_NEGATIVE_Y" value="2" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_Y" value="3" enum="Side">
+		</constant>
+		<constant name="SIDE_NEGATIVE_Z" value="4" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_Z" value="5" enum="Side">
+		</constant>
+		<constant name="SIDE_COUNT" value="6" enum="Side">
+		</constant>
+	</constants>
+</class>

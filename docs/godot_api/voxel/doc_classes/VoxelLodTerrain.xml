@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelLodTerrain" inherits="VoxelNode" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="debug_dump_as_scene" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="include_instancer" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_data_block_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_data_block_info" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="block_pos" type="Vector3" />
+			<param index="1" name="lod" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_draw_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="flag_index" type="int" enum="VoxelLodTerrain.DebugDrawFlag" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_mesh_block_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_mesh_block_info" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="block_pos" type="Vector3" />
+			<param index="1" name="lod" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_get_octrees_detailed" qualifiers="const">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_print_sdf_top_down">
+			<return type="Array" />
+			<param index="0" name="center" type="Vector3i" />
+			<param index="1" name="extents" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_raycast_mesh_block" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="origin" type="Vector3" />
+			<param index="1" name="dir" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_set_draw_flag">
+			<return type="void" />
+			<param index="0" name="flag_index" type="int" enum="VoxelLodTerrain.DebugDrawFlag" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_data_block_region_extent" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_data_block_size" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normalmap_generator_override" qualifiers="const">
+			<return type="VoxelGenerator" />
+			<description>
+			</description>
+		</method>
+		<method name="get_normalmap_generator_override_begin_lod_index" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_process_callback" qualifiers="const">
+			<return type="int" enum="VoxelLodTerrain.ProcessCallback" />
+			<description>
+			</description>
+		</method>
+		<method name="get_statistics" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="is_area_meshed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area_in_voxels" type="AABB" />
+			<param index="1" name="lod_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="save_modified_blocks">
+			<return type="VoxelSaveCompletionTracker" />
+			<description>
+			</description>
+		</method>
+		<method name="set_normalmap_generator_override">
+			<return type="void" />
+			<param index="0" name="generator_override" type="VoxelGenerator" />
+			<description>
+			</description>
+		</method>
+		<method name="set_normalmap_generator_override_begin_lod_index">
+			<return type="void" />
+			<param index="0" name="lod_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_process_callback">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="VoxelLodTerrain.ProcessCallback" />
+			<description>
+			</description>
+		</method>
+		<method name="voxel_to_data_block_position" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="voxel_position" type="Vector3" />
+			<param index="1" name="lod_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="voxel_to_mesh_block_position" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="voxel_position" type="Vector3" />
+			<param index="1" name="lod_index" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="cache_generated_blocks" type="bool" setter="set_cache_generated_blocks" getter="get_cache_generated_blocks" default="false">
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+		</member>
+		<member name="collision_lod_count" type="int" setter="set_collision_lod_count" getter="get_collision_lod_count" default="0">
+		</member>
+		<member name="collision_margin" type="float" setter="set_collision_margin" getter="get_collision_margin" default="0.04">
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+		</member>
+		<member name="collision_update_delay" type="int" setter="set_collision_update_delay" getter="get_collision_update_delay" default="0">
+		</member>
+		<member name="debug_draw_active_mesh_blocks" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_active_visual_and_collision_blocks" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_edit_boxes" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_edited_blocks" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_enabled" type="bool" setter="debug_set_draw_enabled" getter="debug_is_draw_enabled" default="false">
+		</member>
+		<member name="debug_draw_loaded_visual_and_collision_blocks" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_mesh_updates" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_modifier_bounds" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_octree_bounds" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_octree_nodes" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_shadow_occluders" type="bool" setter="debug_set_draw_shadow_occluders" getter="debug_get_draw_shadow_occluders" default="false">
+		</member>
+		<member name="debug_draw_viewer_clipboxes" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_volume_bounds" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="debug_draw_voxel_metadata" type="bool" setter="debug_set_draw_flag" getter="debug_get_draw_flag" default="false">
+		</member>
+		<member name="full_load_mode_enabled" type="bool" setter="set_full_load_mode_enabled" getter="is_full_load_mode_enabled" default="false">
+		</member>
+		<member name="generate_collisions" type="bool" setter="set_generate_collisions" getter="get_generate_collisions" default="true">
+		</member>
+		<member name="lod_count" type="int" setter="set_lod_count" getter="get_lod_count" default="4">
+		</member>
+		<member name="lod_distance" type="float" setter="set_lod_distance" getter="get_lod_distance" default="48.0">
+		</member>
+		<member name="lod_fade_duration" type="float" setter="set_lod_fade_duration" getter="get_lod_fade_duration" default="0.0">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="mesh_block_size" type="int" setter="set_mesh_block_size" getter="get_mesh_block_size" default="16">
+		</member>
+		<member name="normalmap_begin_lod_index" type="int" setter="set_normalmap_begin_lod_index" getter="get_normalmap_begin_lod_index" default="2">
+		</member>
+		<member name="normalmap_enabled" type="bool" setter="set_normalmap_enabled" getter="is_normalmap_enabled" default="false">
+		</member>
+		<member name="normalmap_max_deviation_degrees" type="int" setter="set_normalmap_max_deviation_degrees" getter="get_normalmap_max_deviation_degrees" default="60">
+		</member>
+		<member name="normalmap_octahedral_encoding_enabled" type="bool" setter="set_octahedral_normal_encoding" getter="get_octahedral_normal_encoding" default="false">
+		</member>
+		<member name="normalmap_tile_resolution_max" type="int" setter="set_normalmap_tile_resolution_max" getter="get_normalmap_tile_resolution_max" default="8">
+		</member>
+		<member name="normalmap_tile_resolution_min" type="int" setter="set_normalmap_tile_resolution_min" getter="get_normalmap_tile_resolution_min" default="4">
+		</member>
+		<member name="normalmap_use_gpu" type="bool" setter="set_normalmap_use_gpu" getter="get_normalmap_use_gpu" default="false">
+		</member>
+		<member name="secondary_lod_distance" type="float" setter="set_secondary_lod_distance" getter="get_secondary_lod_distance" default="48.0">
+		</member>
+		<member name="streaming_system" type="int" setter="set_streaming_system" getter="get_streaming_system" enum="VoxelLodTerrain.StreamingSystem" default="0">
+		</member>
+		<member name="threaded_update_enabled" type="bool" setter="set_threaded_update_enabled" getter="is_threaded_update_enabled" default="false">
+		</member>
+		<member name="use_gpu_generation" type="bool" setter="set_generator_use_gpu" getter="get_generator_use_gpu" default="false">
+		</member>
+		<member name="view_distance" type="int" setter="set_view_distance" getter="get_view_distance" default="512">
+		</member>
+		<member name="voxel_bounds" type="AABB" setter="set_voxel_bounds" getter="get_voxel_bounds" default="AABB(-536870900, -536870900, -536870900, 1073741800, 1073741800, 1073741800)">
+		</member>
+	</members>
+	<constants>
+		<constant name="PROCESS_CALLBACK_IDLE" value="0" enum="ProcessCallback">
+		</constant>
+		<constant name="PROCESS_CALLBACK_PHYSICS" value="1" enum="ProcessCallback">
+		</constant>
+		<constant name="PROCESS_CALLBACK_DISABLED" value="2" enum="ProcessCallback">
+		</constant>
+		<constant name="DEBUG_DRAW_OCTREE_NODES" value="0" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_OCTREE_BOUNDS" value="1" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_MESH_UPDATES" value="2" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_EDIT_BOXES" value="3" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_VOLUME_BOUNDS" value="4" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_EDITED_BLOCKS" value="5" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_MODIFIER_BOUNDS" value="6" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_ACTIVE_MESH_BLOCKS" value="7" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_VIEWER_CLIPBOXES" value="8" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_LOADED_VISUAL_AND_COLLISION_BLOCKS" value="9" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_ACTIVE_VISUAL_AND_COLLISION_BLOCKS" value="10" enum="DebugDrawFlag">
+		</constant>
+		<constant name="DEBUG_DRAW_FLAGS_COUNT" value="12" enum="DebugDrawFlag">
+		</constant>
+		<constant name="STREAMING_SYSTEM_LEGACY_OCTREE" value="0" enum="StreamingSystem">
+		</constant>
+		<constant name="STREAMING_SYSTEM_CLIPBOX" value="1" enum="StreamingSystem">
+		</constant>
+	</constants>
+</class>

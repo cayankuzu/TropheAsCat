@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelInstanceGenerator" inherits="Resource" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_voxel_texture_filter_mask" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voxel_texture_filter_mask">
+			<return type="void" />
+			<param index="0" name="mask" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="density" type="float" setter="set_density" getter="get_density" default="0.1">
+		</member>
+		<member name="emit_mode" type="int" setter="set_emit_mode" getter="get_emit_mode" enum="VoxelInstanceGenerator.EmitMode" default="0">
+		</member>
+		<member name="jitter" type="float" setter="set_jitter" getter="get_jitter" default="1.0">
+		</member>
+		<member name="max_height" type="float" setter="set_max_height" getter="get_max_height" default="3.4028235e+38">
+		</member>
+		<member name="max_height_falloff" type="float" setter="set_max_height_falloff" getter="get_max_height_falloff" default="0.0">
+		</member>
+		<member name="max_scale" type="float" setter="set_max_scale" getter="get_max_scale" default="1.0">
+		</member>
+		<member name="max_slope_degrees" type="float" setter="set_max_slope_degrees" getter="get_max_slope_degrees" default="180.0">
+		</member>
+		<member name="max_slope_falloff_degrees" type="float" setter="set_max_slope_falloff_degrees" getter="get_max_slope_falloff_degrees" default="0.0">
+		</member>
+		<member name="min_height" type="float" setter="set_min_height" getter="get_min_height" default="1.1754944e-38">
+		</member>
+		<member name="min_height_falloff" type="float" setter="set_min_height_falloff" getter="get_min_height_falloff" default="0.0">
+		</member>
+		<member name="min_scale" type="float" setter="set_min_scale" getter="get_min_scale" default="1.0">
+		</member>
+		<member name="min_slope_degrees" type="float" setter="set_min_slope_degrees" getter="get_min_slope_degrees" default="0.0">
+		</member>
+		<member name="min_slope_falloff_degrees" type="float" setter="set_min_slope_falloff_degrees" getter="get_min_slope_falloff_degrees" default="0.0">
+		</member>
+		<member name="noise" type="Noise" setter="set_noise" getter="get_noise">
+		</member>
+		<member name="noise_dimension" type="int" setter="set_noise_dimension" getter="get_noise_dimension" enum="VoxelInstanceGenerator.Dimension" default="1">
+		</member>
+		<member name="noise_falloff" type="float" setter="set_noise_falloff" getter="get_noise_falloff" default="0.0">
+		</member>
+		<member name="noise_graph" type="VoxelGraphFunction" setter="set_noise_graph" getter="get_noise_graph">
+		</member>
+		<member name="noise_on_scale" type="float" setter="set_noise_on_scale" getter="get_noise_on_scale" default="0.0">
+		</member>
+		<member name="noise_threshold" type="float" setter="set_noise_threshold" getter="get_noise_threshold" default="0.0">
+		</member>
+		<member name="offset_along_normal" type="float" setter="set_offset_along_normal" getter="get_offset_along_normal" default="0.0">
+		</member>
+		<member name="random_rotation" type="bool" setter="set_random_rotation" getter="get_random_rotation" default="true">
+		</member>
+		<member name="random_vertical_flip" type="bool" setter="set_random_vertical_flip" getter="get_random_vertical_flip" default="false">
+		</member>
+		<member name="scale_distribution" type="int" setter="set_scale_distribution" getter="get_scale_distribution" enum="VoxelInstanceGenerator.Distribution" default="1">
+		</member>
+		<member name="snap_to_generator_sdf_enabled" type="bool" setter="set_snap_to_generator_sdf_enabled" getter="get_snap_to_generator_sdf_enabled" default="false">
+		</member>
+		<member name="snap_to_generator_sdf_sample_count" type="int" setter="set_snap_to_generator_sdf_sample_count" getter="get_snap_to_generator_sdf_sample_count" default="2">
+		</member>
+		<member name="snap_to_generator_sdf_search_distance" type="float" setter="set_snap_to_generator_sdf_search_distance" getter="get_snap_to_generator_sdf_search_distance" default="1.0">
+		</member>
+		<member name="triangle_area_threshold" type="float" setter="set_triangle_area_threshold" getter="get_triangle_area_threshold" default="0.0">
+		</member>
+		<member name="vertical_alignment" type="float" setter="set_vertical_alignment" getter="get_vertical_alignment" default="1.0">
+		</member>
+		<member name="voxel_texture_filter_array" type="PackedInt32Array" setter="set_voxel_texture_filter_array" getter="get_voxel_texture_filter_array" default="PackedInt32Array(0)">
+		</member>
+		<member name="voxel_texture_filter_enabled" type="bool" setter="set_voxel_texture_filter_enabled" getter="is_voxel_texture_filter_enabled" default="false">
+		</member>
+		<member name="voxel_texture_filter_threshold" type="float" setter="set_voxel_texture_filter_threshold" getter="get_voxel_texture_filter_threshold" default="0.5">
+		</member>
+	</members>
+	<constants>
+		<constant name="EMIT_FROM_VERTICES" value="0" enum="EmitMode">
+		</constant>
+		<constant name="EMIT_FROM_FACES_FAST" value="1" enum="EmitMode">
+		</constant>
+		<constant name="EMIT_FROM_FACES" value="2" enum="EmitMode">
+		</constant>
+		<constant name="EMIT_ONE_PER_TRIANGLE" value="3" enum="EmitMode">
+		</constant>
+		<constant name="EMIT_MODE_COUNT" value="4" enum="EmitMode">
+		</constant>
+		<constant name="DISTRIBUTION_LINEAR" value="0" enum="Distribution">
+		</constant>
+		<constant name="DISTRIBUTION_QUADRATIC" value="1" enum="Distribution">
+		</constant>
+		<constant name="DISTRIBUTION_CUBIC" value="2" enum="Distribution">
+		</constant>
+		<constant name="DISTRIBUTION_QUINTIC" value="3" enum="Distribution">
+		</constant>
+		<constant name="DISTRIBUTION_COUNT" value="4" enum="Distribution">
+		</constant>
+		<constant name="DIMENSION_2D" value="0" enum="Dimension">
+		</constant>
+		<constant name="DIMENSION_3D" value="1" enum="Dimension">
+		</constant>
+		<constant name="DIMENSION_COUNT" value="2" enum="Dimension">
+		</constant>
+	</constants>
+</class>

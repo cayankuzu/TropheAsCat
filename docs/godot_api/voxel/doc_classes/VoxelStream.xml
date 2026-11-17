@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelStream" inherits="Resource" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="flush">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_block_size" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_used_channels_mask" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="load_voxel_block">
+			<return type="int" enum="VoxelStream.ResultCode" />
+			<param index="0" name="out_buffer" type="VoxelBuffer" />
+			<param index="1" name="block_position" type="Vector3i" />
+			<param index="2" name="lod_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="save_voxel_block">
+			<return type="void" />
+			<param index="0" name="buffer" type="VoxelBuffer" />
+			<param index="1" name="block_position" type="Vector3i" />
+			<param index="2" name="lod_index" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="VoxelBlockSerializer.Compression" default="1">
+		</member>
+		<member name="save_generator_output" type="bool" setter="set_save_generator_output" getter="get_save_generator_output" default="false">
+		</member>
+	</members>
+	<constants>
+		<constant name="RESULT_ERROR" value="0" enum="ResultCode">
+		</constant>
+		<constant name="RESULT_BLOCK_FOUND" value="2" enum="ResultCode">
+		</constant>
+		<constant name="RESULT_BLOCK_NOT_FOUND" value="1" enum="ResultCode">
+		</constant>
+	</constants>
+</class>

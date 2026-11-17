@@ -1,0 +1,43 @@
+[gd_scene load_steps=6 format=3 uid="uid://explosioneffect01"]
+
+[ext_resource type="Script" path="res://scripts/explosion_effect.gd" id="1_exp"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx_explosion.wav" id="2_sound"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Sparks"]
+transparency = 1
+albedo_color = Color(1, 0.6, 0.15, 1)
+emission_enabled = true
+emission = Color(1, 0.7, 0.2, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_spark"]
+material = SubResource("Mat_Sparks")
+size = Vector3(0.2, 0.2, 0.2)
+
+[node name="ExplosionEffect" type="Node3D"]
+script = ExtResource("1_exp")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_sound")
+unit_size = 15.0
+max_distance = 80.0
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.7, 0.2, 1)
+light_energy = 5.0
+omni_range = 10.0
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 32
+lifetime = 0.8
+one_shot = true
+explosiveness = 0.95
+mesh = SubResource("BoxMesh_spark")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -14, 0)
+initial_velocity_min = 12.0
+initial_velocity_max = 24.0
+scale_amount_min = 0.5
+scale_amount_max = 1.2

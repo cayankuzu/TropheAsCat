@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelBlockyModelMesh" inherits="VoxelBlockyModel" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="mesh_ortho_rotation_index" type="int" setter="set_mesh_ortho_rotation_index" getter="get_mesh_ortho_rotation_index" default="0">
+		</member>
+		<member name="side_cutout_enabled" type="bool" setter="set_side_cutout_enabled" getter="is_side_cutout_enabled" default="false">
+		</member>
+		<member name="side_vertex_tolerance" type="float" setter="set_side_vertex_tolerance" getter="get_side_vertex_tolerance" default="0.001">
+		</member>
+	</members>
+</class>

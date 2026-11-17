@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelViewer" inherits="Node3D" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_network_peer_id" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_network_peer_id">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled_in_editor" type="bool" setter="set_enabled_in_editor" getter="is_enabled_in_editor" default="false">
+		</member>
+		<member name="requires_collisions" type="bool" setter="set_requires_collisions" getter="is_requiring_collisions" default="true">
+		</member>
+		<member name="requires_data_block_notifications" type="bool" setter="set_requires_data_block_notifications" getter="is_requiring_data_block_notifications" default="false">
+		</member>
+		<member name="requires_visuals" type="bool" setter="set_requires_visuals" getter="is_requiring_visuals" default="true">
+		</member>
+		<member name="view_distance" type="int" setter="set_view_distance" getter="get_view_distance" default="128">
+		</member>
+		<member name="view_distance_vertical_ratio" type="float" setter="set_view_distance_vertical_ratio" getter="get_view_distance_vertical_ratio" default="1.0">
+		</member>
+	</members>
+</class>

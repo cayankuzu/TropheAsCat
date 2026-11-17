@@ -1,0 +1,193 @@
+[gd_scene load_steps=14 format=3 uid="uid://bipedalrophe01"]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cat"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_FurDark"]
+albedo_color = Color(0.14, 0.13, 0.16, 1)
+roughness = 0.65
+
+[sub_resource type="StandardMaterial3D" id="Mat_FurWhite"]
+albedo_color = Color(0.92, 0.9, 0.94, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_PinkNose"]
+albedo_color = Color(1, 0.5, 0.65, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_NeonEyes"]
+albedo_color = Color(0.3, 1, 0.4, 1)
+emission_enabled = true
+emission = Color(0.3, 1, 0.4, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_WizardHat"]
+albedo_color = Color(0.35, 0.08, 0.6, 1)
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="Mat_WizardGold"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="StandardMaterial3D" id="Mat_AcidBeam"]
+transparency = 1
+albedo_color = Color(0.2, 1, 0.3, 0.75)
+emission_enabled = true
+emission = Color(0.2, 1, 0.3, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_torso"]
+material = SubResource("Mat_FurDark")
+radius = 0.35
+height = 1.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+material = SubResource("Mat_FurDark")
+radius = 0.38
+height = 0.76
+
+[sub_resource type="PrismMesh" id="PrismMesh_ear"]
+material = SubResource("Mat_FurDark")
+size = Vector3(0.18, 0.22, 0.1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cone"]
+material = SubResource("Mat_WizardHat")
+top_radius = 0.04
+bottom_radius = 0.38
+height = 0.65
+
+[node name="Player" type="CharacterBody3D" groups=["player"]]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_cat")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+
+[node name="Torso" type="MeshInstance3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("CapsuleMesh_torso")
+
+[node name="BellyPatch" type="CSGBox3D" parent="VisualRoot/Torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, -0.25)
+size = Vector3(0.38, 0.6, 0.15)
+material = SubResource("Mat_FurWhite")
+
+[node name="Head" type="MeshInstance3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, -0.05)
+mesh = SubResource("SphereMesh_head")
+
+[node name="LeftEar" type="MeshInstance3D" parent="VisualRoot/Head"]
+transform = Transform3D(0.92, -0.39, 0, 0.39, 0.92, 0, 0, 0, 1, -0.22, 0.35, 0)
+mesh = SubResource("PrismMesh_ear")
+
+[node name="RightEar" type="MeshInstance3D" parent="VisualRoot/Head"]
+transform = Transform3D(0.92, 0.39, 0, -0.39, 0.92, 0, 0, 0, 1, 0.22, 0.35, 0)
+mesh = SubResource("PrismMesh_ear")
+
+[node name="LeftEye" type="CSGSphere3D" parent="VisualRoot/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.08, -0.32)
+radius = 0.09
+material = SubResource("Mat_NeonEyes")
+
+[node name="RightEye" type="CSGSphere3D" parent="VisualRoot/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.08, -0.32)
+radius = 0.09
+material = SubResource("Mat_NeonEyes")
+
+[node name="Nose" type="CSGBox3D" parent="VisualRoot/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -0.38)
+size = Vector3(0.12, 0.08, 0.1)
+material = SubResource("Mat_PinkNose")
+
+[node name="WizardHat" type="Node3D" parent="VisualRoot/Head"]
+transform = Transform3D(1, 0, 0, 0, 0.96, -0.26, 0, 0.26, 0.96, 0, 0.32, 0.05)
+visible = false
+
+[node name="Brim" type="CSGCylinder3D" parent="VisualRoot/Head/WizardHat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+radius = 0.58
+height = 0.06
+material = SubResource("Mat_WizardHat")
+
+[node name="Cone" type="MeshInstance3D" parent="VisualRoot/Head/WizardHat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+mesh = SubResource("CylinderMesh_cone")
+
+[node name="GoldBuckle" type="CSGTorus3D" parent="VisualRoot/Head/WizardHat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+inner_radius = 0.32
+outer_radius = 0.42
+material = SubResource("Mat_WizardGold")
+
+[node name="LeftArm" type="CSGCylinder3D" parent="VisualRoot"]
+transform = Transform3D(0.96, 0, 0.26, 0, 1, 0, -0.26, 0, 0.96, -0.42, 0.85, -0.2)
+radius = 0.1
+height = 0.5
+material = SubResource("Mat_FurDark")
+
+[node name="RightArm" type="CSGCylinder3D" parent="VisualRoot"]
+transform = Transform3D(0.96, 0, -0.26, 0, 1, 0, 0.26, 0, 0.96, 0.42, 0.85, -0.2)
+radius = 0.1
+height = 0.5
+material = SubResource("Mat_FurDark")
+
+[node name="LeftLeg" type="CSGCylinder3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.25, 0)
+radius = 0.12
+height = 0.55
+material = SubResource("Mat_FurDark")
+
+[node name="RightLeg" type="CSGCylinder3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.25, 0)
+radius = 0.12
+height = 0.55
+material = SubResource("Mat_FurDark")
+
+[node name="Tail" type="CSGCylinder3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.7, 0.71, 0, -0.71, 0.7, 0, 0.45, 0.45)
+radius = 0.08
+height = 0.75
+material = SubResource("Mat_FurDark")
+
+[node name="CastPoint" type="Marker3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -0.8)
+
+[node name="AcidBeam" type="CSGCylinder3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 1.0, -12.0)
+visible = false
+radius = 0.15
+height = 24.0
+material = SubResource("Mat_AcidBeam")
+
+[node name="AcidParticles" type="CPUParticles3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -1.0)
+emitting = false
+amount = 32
+lifetime = 0.4
+mesh = SubResource("SphereMesh_head")
+direction = Vector3(0, 0, -1)
+spread = 15.0
+gravity = Vector3(0, -6, 0)
+initial_velocity_min = 25.0
+initial_velocity_max = 35.0
+scale_amount_min = 0.05
+scale_amount_max = 0.12
+
+[node name="SpringArm3D" type="SpringArm3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.34, 0, -0.34, 0.94, 0, 1.6, 0)
+spring_length = 4.2
+margin = 0.3
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
+current = true
+fov = 75.0
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+max_distance = 60.0

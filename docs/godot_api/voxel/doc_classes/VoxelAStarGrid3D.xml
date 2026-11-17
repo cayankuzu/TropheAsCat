@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelAStarGrid3D" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="debug_get_visited_positions" qualifiers="const">
+			<return type="Vector3i[]" />
+			<description>
+			</description>
+		</method>
+		<method name="find_path">
+			<return type="Vector3i[]" />
+			<param index="0" name="from_position" type="Vector3i" />
+			<param index="1" name="to_position" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="find_path_async">
+			<return type="void" />
+			<param index="0" name="from_position" type="Vector3i" />
+			<param index="1" name="to_position" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_region">
+			<return type="AABB" />
+			<description>
+			</description>
+		</method>
+		<method name="is_running_async" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_region">
+			<return type="void" />
+			<param index="0" name="box" type="AABB" />
+			<description>
+			</description>
+		</method>
+		<method name="set_terrain">
+			<return type="void" />
+			<param index="0" name="terrain" type="VoxelTerrain" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="async_search_completed">
+			<param index="0" name="path" type="Vector3i[]" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelToolLodTerrain" inherits="VoxelTool" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="do_graph">
+			<return type="void" />
+			<param index="0" name="graph" type="VoxelGeneratorGraph" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="area_size" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="do_hemisphere">
+			<return type="void" />
+			<param index="0" name="center" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="flat_direction" type="Vector3" />
+			<param index="3" name="smoothness" type="float" default="0.0" />
+			<description>
+			</description>
+		</method>
+		<method name="do_sphere_async">
+			<return type="void" />
+			<param index="0" name="center" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="get_raycast_binary_search_iterations" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel_f_interpolated" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="run_blocky_random_tick">
+			<return type="void" />
+			<param index="0" name="area" type="AABB" />
+			<param index="1" name="voxel_count" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<param index="3" name="batch_count" type="int" default="16" />
+			<param index="4" name="tags_mask" type="int" default="4294967295" />
+			<description>
+			</description>
+		</method>
+		<method name="separate_floating_chunks">
+			<return type="Array" />
+			<param index="0" name="box" type="AABB" />
+			<param index="1" name="parent_node" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="set_raycast_binary_search_iterations">
+			<return type="void" />
+			<param index="0" name="iterations" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="stamp_sdf">
+			<return type="void" />
+			<param index="0" name="mesh_sdf" type="VoxelMeshSDF" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="isolevel" type="float" />
+			<param index="3" name="sdf_scale" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

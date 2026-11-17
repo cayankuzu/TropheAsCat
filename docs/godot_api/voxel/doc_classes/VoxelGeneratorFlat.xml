@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGeneratorFlat" inherits="VoxelGenerator" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="channel" type="int" setter="set_channel" getter="get_channel" enum="VoxelBuffer.ChannelId" default="1">
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="0.0">
+		</member>
+		<member name="voxel_type" type="int" setter="set_voxel_type" getter="get_voxel_type" default="1">
+		</member>
+	</members>
+</class>

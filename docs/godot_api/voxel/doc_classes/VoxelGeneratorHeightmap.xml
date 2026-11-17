@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGeneratorHeightmap" inherits="VoxelGenerator" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="channel" type="int" setter="set_channel" getter="get_channel" enum="VoxelBuffer.ChannelId" default="1">
+		</member>
+		<member name="height_range" type="float" setter="set_height_range" getter="get_height_range" default="30.0">
+		</member>
+		<member name="height_start" type="float" setter="set_height_start" getter="get_height_start" default="-50.0">
+		</member>
+		<member name="iso_scale" type="float" setter="set_iso_scale" getter="get_iso_scale" default="1.0">
+		</member>
+		<member name="offset" type="Vector2i" setter="set_offset" getter="get_offset" default="Vector2i(0, 0)">
+		</member>
+	</members>
+</class>

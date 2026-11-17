@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelBlockyModelFluid" inherits="VoxelBlockyModel" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="fluid" type="VoxelBlockyFluid" setter="set_fluid" getter="get_fluid">
+		</member>
+		<member name="level" type="int" setter="set_level" getter="get_level" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="MAX_LEVELS" value="256">
+		</constant>
+	</constants>
+</class>

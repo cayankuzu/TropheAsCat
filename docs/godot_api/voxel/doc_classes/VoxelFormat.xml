@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelFormat" inherits="Resource" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="configure_buffer" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="buffer" type="VoxelBuffer" />
+			<description>
+			</description>
+		</method>
+		<method name="create_buffer" qualifiers="const">
+			<return type="VoxelBuffer" />
+			<param index="0" name="size" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_channel_depth" qualifiers="const">
+			<return type="int" enum="VoxelBuffer.Depth" />
+			<param index="0" name="channel_index" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="set_channel_depth">
+			<return type="void" />
+			<param index="0" name="channel_index" type="int" enum="VoxelBuffer.ChannelId" />
+			<param index="1" name="depth" type="int" enum="VoxelBuffer.Depth" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_data" type="Array" setter="_set_data" getter="_get_data" default="[0, 1, 1, 0, 1, 1, 0, 0, 0]">
+		</member>
+		<member name="color_depth" type="int" setter="set_channel_depth" getter="get_channel_depth" enum="VoxelBuffer.Depth" default="0">
+		</member>
+		<member name="indices_depth" type="int" setter="set_channel_depth" getter="get_channel_depth" enum="VoxelBuffer.Depth" default="1">
+		</member>
+		<member name="sdf_depth" type="int" setter="set_channel_depth" getter="get_channel_depth" enum="VoxelBuffer.Depth" default="1">
+		</member>
+		<member name="type_depth" type="int" setter="set_channel_depth" getter="get_channel_depth" enum="VoxelBuffer.Depth" default="1">
+		</member>
+	</members>
+</class>

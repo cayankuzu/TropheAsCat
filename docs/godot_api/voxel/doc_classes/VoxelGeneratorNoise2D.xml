@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGeneratorNoise2D" inherits="VoxelGeneratorHeightmap" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+		</member>
+		<member name="height_range" type="float" setter="set_height_range" getter="get_height_range" overrides="VoxelGeneratorHeightmap" default="200.0" />
+		<member name="noise" type="Noise" setter="set_noise" getter="get_noise">
+		</member>
+	</members>
+</class>

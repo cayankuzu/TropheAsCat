@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelMesherBlocky" inherits="VoxelMesher" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_shadow_occluder_side" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="side" type="int" enum="VoxelMesherBlocky.Side" />
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_occluder_side">
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="VoxelMesherBlocky.Side" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="library" type="VoxelBlockyLibraryBase" setter="set_library" getter="get_library">
+		</member>
+		<member name="occlusion_darkness" type="float" setter="set_occlusion_darkness" getter="get_occlusion_darkness" default="0.8">
+		</member>
+		<member name="occlusion_enabled" type="bool" setter="set_occlusion_enabled" getter="get_occlusion_enabled" default="true">
+		</member>
+		<member name="shadow_occluder_negative_x" type="bool" setter="set_shadow_occluder_side" getter="get_shadow_occluder_side" default="false">
+		</member>
+		<member name="shadow_occluder_negative_y" type="bool" setter="set_shadow_occluder_side" getter="get_shadow_occluder_side" default="false">
+		</member>
+		<member name="shadow_occluder_negative_z" type="bool" setter="set_shadow_occluder_side" getter="get_shadow_occluder_side" default="false">
+		</member>
+		<member name="shadow_occluder_positive_x" type="bool" setter="set_shadow_occluder_side" getter="get_shadow_occluder_side" default="false">
+		</member>
+		<member name="shadow_occluder_positive_y" type="bool" setter="set_shadow_occluder_side" getter="get_shadow_occluder_side" default="false">
+		</member>
+		<member name="shadow_occluder_positive_z" type="bool" setter="set_shadow_occluder_side" getter="get_shadow_occluder_side" default="false">
+		</member>
+		<member name="tint_mode" type="int" setter="set_tint_mode" getter="get_tint_mode" enum="VoxelMesherBlocky.TintMode" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="SIDE_NEGATIVE_X" value="0" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_X" value="1" enum="Side">
+		</constant>
+		<constant name="SIDE_NEGATIVE_Y" value="2" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_Y" value="3" enum="Side">
+		</constant>
+		<constant name="SIDE_NEGATIVE_Z" value="4" enum="Side">
+		</constant>
+		<constant name="SIDE_POSITIVE_Z" value="5" enum="Side">
+		</constant>
+		<constant name="TINT_NONE" value="0" enum="TintMode">
+		</constant>
+		<constant name="TINT_RAW_COLOR" value="1" enum="TintMode">
+		</constant>
+	</constants>
+</class>

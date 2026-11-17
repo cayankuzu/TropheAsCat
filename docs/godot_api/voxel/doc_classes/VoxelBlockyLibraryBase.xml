@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelBlockyLibraryBase" inherits="Resource" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bake">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_materials" qualifiers="const">
+			<return type="Material[]" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bake_tangents" type="bool" setter="set_bake_tangents" getter="get_bake_tangents" default="true">
+		</member>
+	</members>
+	<constants>
+		<constant name="MAX_MODELS" value="65536">
+		</constant>
+		<constant name="MAX_MATERIALS" value="65536">
+		</constant>
+	</constants>
+</class>

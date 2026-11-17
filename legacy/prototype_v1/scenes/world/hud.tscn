@@ -1,0 +1,188 @@
+[gd_scene load_steps=2 format=3 uid="uid://gamehud01"]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="RewindOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.1, 0.85, 1, 0.25)
+
+[node name="RewindText" type="Label" parent="RewindOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 40.0
+offset_right = 200.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.3, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "◀◀ REWINDING TIME ◀◀"
+horizontal_alignment = 1
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Reticle" type="ColorRect" parent="CenterContainer"]
+custom_minimum_size = Vector2(8, 8)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.85)
+
+[node name="TopPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 16.0
+offset_right = 220.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="Label" type="Label" parent="TopPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.25, 0.45, 1)
+theme_override_font_sizes/font_size = 20
+text = "★ CAT AS ROPHE: UNLIMITED DESTRUCTION ★"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AlertLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -120.0
+offset_right = 250.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 26
+text = "[ ALERT ]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -70.0
+offset_right = 340.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BottomBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Mode1" type="Label" parent="BottomBar/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "[1] ROAM (Chill)"
+
+[node name="Mode2" type="Label" parent="BottomBar/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "[2] WIZARD (Fire)"
+
+[node name="Mode3" type="Label" parent="BottomBar/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "[3] HAIRBALL (Slam)"
+
+[node name="Mode4" type="Label" parent="BottomBar/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "[4] ACID (Melt)"
+
+[node name="ControlsPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -180.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ControlsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "CONTROLS"
+
+[node name="Line1" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "WASD: Move | Shift: Sprint"
+
+[node name="Line2" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "SPACE: Jump | Mouse: Look"
+
+[node name="Line3" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "LMB: Cast / Shoot Weapon"
+
+[node name="Line4" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "1, 2, 3, 4: Switch Modes"
+
+[node name="Line5" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "Hold [R]: Rewind Time"
+
+[node name="Line6" type="Label" parent="ControlsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "ESC: Toggle Mouse Cursor"

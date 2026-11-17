@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelBuffer" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="clear_voxel_metadata">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="clear_voxel_metadata_in_area">
+			<return type="void" />
+			<param index="0" name="min_pos" type="Vector3i" />
+			<param index="1" name="max_pos" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="compress_uniform_channels">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="copy_channel_from">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="copy_channel_from_area">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="src_min" type="Vector3i" />
+			<param index="2" name="src_max" type="Vector3i" />
+			<param index="3" name="dst_min" type="Vector3i" />
+			<param index="4" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="copy_voxel_metadata_in_area">
+			<return type="void" />
+			<param index="0" name="src_buffer" type="VoxelBuffer" />
+			<param index="1" name="src_min_pos" type="Vector3i" />
+			<param index="2" name="src_max_pos" type="Vector3i" />
+			<param index="3" name="dst_min_pos" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="create">
+			<return type="void" />
+			<param index="0" name="sx" type="int" />
+			<param index="1" name="sy" type="int" />
+			<param index="2" name="sz" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="create_3d_texture_from_sdf_zxy" qualifiers="const">
+			<return type="ImageTexture3D" />
+			<param index="0" name="output_format" type="int" enum="Image.Format" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_print_sdf_y_slices" qualifiers="const">
+			<return type="Image[]" />
+			<param index="0" name="scale" type="float" default="1.0" />
+			<description>
+			</description>
+		</method>
+		<method name="decompress_channel">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="downscale_to" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="dst" type="VoxelBuffer" />
+			<param index="1" name="src_min" type="Vector3i" />
+			<param index="2" name="src_max" type="Vector3i" />
+			<param index="3" name="dst_min" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="fill_area">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="min" type="Vector3i" />
+			<param index="2" name="max" type="Vector3i" />
+			<param index="3" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="fill_area_f">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="min" type="Vector3i" />
+			<param index="2" name="max" type="Vector3i" />
+			<param index="3" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="fill_f">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="for_each_voxel_metadata" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="for_each_voxel_metadata_in_area">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="min_pos" type="Vector3i" />
+			<param index="2" name="max_pos" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_allocator" qualifiers="const">
+			<return type="int" enum="VoxelBuffer.Allocator" />
+			<description>
+			</description>
+		</method>
+		<method name="get_block_metadata" qualifiers="const">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="get_channel_as_byte_array" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="channel_index" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="get_channel_compression" qualifiers="const">
+			<return type="int" enum="VoxelBuffer.Compression" />
+			<param index="0" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_channel_depth" qualifiers="const">
+			<return type="int" enum="VoxelBuffer.Depth" />
+			<param index="0" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="z" type="int" />
+			<param index="3" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel_f" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="z" type="int" />
+			<param index="3" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="pos" type="Vector3i" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel_tool">
+			<return type="VoxelTool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voxel_v" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="pos" type="Vector3i" />
+			<param index="1" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="is_uniform" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="channel" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="mirror">
+			<return type="void" />
+			<param index="0" name="axis" type="int" enum="Vector3i.Axis" />
+			<description>
+			</description>
+		</method>
+		<method name="op_add_buffer_f">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="op_max_buffer_f">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="op_min_buffer_f">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="op_mul_buffer_f">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="op_mul_value_f">
+			<return type="void" />
+			<param index="0" name="other" type="float" />
+			<param index="1" name="channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="op_select_less_src_f_dst_i_values">
+			<return type="void" />
+			<param index="0" name="src" type="VoxelBuffer" />
+			<param index="1" name="src_channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<param index="2" name="threshold" type="float" />
+			<param index="3" name="value_if_less" type="int" />
+			<param index="4" name="value_if_more" type="int" />
+			<param index="5" name="dst_channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="op_sub_buffer_f">
+			<return type="void" />
+			<param index="0" name="other" type="VoxelBuffer" />
+			<param index="1" name="channel" type="int" enum="VoxelBuffer.ChannelId" />
+			<description>
+			</description>
+		</method>
+		<method name="remap_values">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="map" type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="rotate_90">
+			<return type="void" />
+			<param index="0" name="axis" type="int" enum="Vector3i.Axis" />
+			<param index="1" name="turns" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_block_metadata">
+			<return type="void" />
+			<param index="0" name="meta" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="set_channel_depth">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="depth" type="int" enum="VoxelBuffer.Depth" />
+			<description>
+			</description>
+		</method>
+		<method name="set_channel_from_byte_array">
+			<return type="void" />
+			<param index="0" name="channel_index" type="int" enum="VoxelBuffer.ChannelId" />
+			<param index="1" name="data" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voxel">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="x" type="int" />
+			<param index="2" name="y" type="int" />
+			<param index="3" name="z" type="int" />
+			<param index="4" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voxel_f">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<param index="1" name="x" type="int" />
+			<param index="2" name="y" type="int" />
+			<param index="3" name="z" type="int" />
+			<param index="4" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voxel_metadata">
+			<return type="void" />
+			<param index="0" name="pos" type="Vector3i" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voxel_v">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="pos" type="Vector3i" />
+			<param index="2" name="channel" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="update_3d_texture_from_sdf_zxy" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="existing_texture" type="ImageTexture3D" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="CHANNEL_TYPE" value="0" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_SDF" value="1" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_COLOR" value="2" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_INDICES" value="3" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_WEIGHTS" value="4" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_DATA5" value="5" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_DATA6" value="6" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_DATA7" value="7" enum="ChannelId">
+		</constant>
+		<constant name="MAX_CHANNELS" value="8" enum="ChannelId">
+		</constant>
+		<constant name="CHANNEL_TYPE_BIT" value="1" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_SDF_BIT" value="2" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_COLOR_BIT" value="4" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_INDICES_BIT" value="8" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_WEIGHTS_BIT" value="16" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_DATA5_BIT" value="32" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_DATA6_BIT" value="64" enum="ChannelMask">
+		</constant>
+		<constant name="CHANNEL_DATA7_BIT" value="128" enum="ChannelMask">
+		</constant>
+		<constant name="ALL_CHANNELS_MASK" value="255" enum="ChannelMask">
+		</constant>
+		<constant name="DEPTH_8_BIT" value="0" enum="Depth">
+		</constant>
+		<constant name="DEPTH_16_BIT" value="1" enum="Depth">
+		</constant>
+		<constant name="DEPTH_32_BIT" value="2" enum="Depth">
+		</constant>
+		<constant name="DEPTH_64_BIT" value="3" enum="Depth">
+		</constant>
+		<constant name="DEPTH_COUNT" value="4" enum="Depth">
+		</constant>
+		<constant name="COMPRESSION_NONE" value="0" enum="Compression">
+		</constant>
+		<constant name="COMPRESSION_UNIFORM" value="1" enum="Compression">
+		</constant>
+		<constant name="COMPRESSION_COUNT" value="2" enum="Compression">
+		</constant>
+		<constant name="ALLOCATOR_DEFAULT" value="0" enum="Allocator">
+		</constant>
+		<constant name="ALLOCATOR_POOL" value="1" enum="Allocator">
+		</constant>
+		<constant name="ALLOCATOR_COUNT" value="2" enum="Allocator">
+		</constant>
+		<constant name="MAX_SIZE" value="65535">
+		</constant>
+	</constants>
+</class>

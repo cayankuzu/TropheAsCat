@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGeneratorGraph" inherits="VoxelGenerator" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bake_sphere_bumpmap">
+			<return type="void" />
+			<param index="0" name="im" type="Image" />
+			<param index="1" name="ref_radius" type="float" />
+			<param index="2" name="sdf_min" type="float" />
+			<param index="3" name="sdf_max" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="bake_sphere_normalmap">
+			<return type="void" />
+			<param index="0" name="im" type="Image" />
+			<param index="1" name="ref_radius" type="float" />
+			<param index="2" name="strength" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="compile">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_analyze_range" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="min_pos" type="Vector3" />
+			<param index="1" name="max_pos" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_load_waves_preset">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="debug_measure_microseconds_per_voxel">
+			<return type="float" />
+			<param index="0" name="use_singular_queries" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_image_from_sdf">
+			<return type="void" />
+			<param index="0" name="im" type="Image" />
+			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="size" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="get_main_function" qualifiers="const">
+			<return type="VoxelGraphFunction" />
+			<description>
+			</description>
+		</method>
+		<method name="raycast_sdf_approx" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="ray_origin" type="Vector3" />
+			<param index="1" name="ray_end" type="Vector3" />
+			<param index="2" name="stride" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="debug_block_clipping" type="bool" setter="set_debug_clipped_blocks" getter="is_debug_clipped_blocks" default="false">
+		</member>
+		<member name="sdf_clip_threshold" type="float" setter="set_sdf_clip_threshold" getter="get_sdf_clip_threshold" default="1.5">
+		</member>
+		<member name="subdivision_size" type="int" setter="set_subdivision_size" getter="get_subdivision_size" default="16">
+		</member>
+		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="VoxelGeneratorGraph.TextureMode" default="0">
+		</member>
+		<member name="use_optimized_execution_map" type="bool" setter="set_use_optimized_execution_map" getter="is_using_optimized_execution_map" default="true">
+		</member>
+		<member name="use_subdivision" type="bool" setter="set_use_subdivision" getter="is_using_subdivision" default="true">
+		</member>
+		<member name="use_xz_caching" type="bool" setter="set_use_xz_caching" getter="is_using_xz_caching" default="true">
+		</member>
+	</members>
+	<signals>
+		<signal name="node_name_changed">
+			<param index="0" name="node_id" type="int" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TEXTURE_MODE_MIXEL4" value="0" enum="TextureMode">
+		</constant>
+		<constant name="TEXTURE_MODE_SINGLE" value="1" enum="TextureMode">
+		</constant>
+	</constants>
+</class>

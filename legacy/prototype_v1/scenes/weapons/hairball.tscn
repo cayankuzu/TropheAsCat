@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://hairball01"]
+
+[ext_resource type="Script" path="res://scripts/hairball.gd" id="1_hairball"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hb"]
+radius = 0.42
+
+[sub_resource type="StandardMaterial3D" id="Mat_Hairball"]
+albedo_color = Color(0.28, 0.22, 0.18, 1)
+roughness = 0.95
+
+[sub_resource type="SphereMesh" id="SphereMesh_hb"]
+material = SubResource("Mat_Hairball")
+radius = 0.4
+height = 0.8
+
+[node name="Hairball" type="RigidBody3D"]
+collision_layer = 8
+collision_mask = 5
+max_contacts_reported = 2
+contact_monitor = true
+script = ExtResource("1_hairball")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_hb")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_hb")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

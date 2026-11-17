@@ -1,0 +1,14 @@
+# Godot
+.godot/
+*.import.tmp
+# Raw downloads and staging (never shipped, licences kept in docs)
+_downloads/
+# Builds and their zips (published on itch.io)
+build/
+builds/
+# Old experiments (whole copies of the project) and test output
+_spikes/
+tests/out/
+# Editor and tool state, logs
+.claude/
+*.log

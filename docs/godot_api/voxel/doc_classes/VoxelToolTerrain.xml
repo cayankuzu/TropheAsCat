@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelToolTerrain" inherits="VoxelTool" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="do_hemisphere">
+			<return type="void" />
+			<param index="0" name="center" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="flat_direction" type="Vector3" />
+			<param index="3" name="smoothness" type="float" default="0.0" />
+			<description>
+			</description>
+		</method>
+		<method name="for_each_voxel_metadata_in_area">
+			<return type="void" />
+			<param index="0" name="voxel_area" type="AABB" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="run_blocky_random_tick">
+			<return type="void" />
+			<param index="0" name="area" type="AABB" />
+			<param index="1" name="voxel_count" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<param index="3" name="batch_count" type="int" default="16" />
+			<param index="4" name="tags_mask" type="int" default="4294967295" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
